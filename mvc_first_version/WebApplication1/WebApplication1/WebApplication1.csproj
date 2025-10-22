@@ -9,6 +9,15 @@
 
     <ItemGroup>
         <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true"/>
+        <None Include="wwwroot\assets\favicon.ico" />
+        <None Include="wwwroot\assets\img\bg-callout.jpg" />
+        <None Include="wwwroot\assets\img\bg-masthead.jpg" />
+        <None Include="wwwroot\assets\img\portfolio-1.jpg" />
+        <None Include="wwwroot\assets\img\portfolio-2.jpg" />
+        <None Include="wwwroot\assets\img\portfolio-3.jpg" />
+        <None Include="wwwroot\assets\img\portfolio-4.jpg" />
+        <None Include="wwwroot\css\styles.css" />
+        <None Include="wwwroot\js\scripts.js" />
     </ItemGroup>
 
     <ItemGroup>
