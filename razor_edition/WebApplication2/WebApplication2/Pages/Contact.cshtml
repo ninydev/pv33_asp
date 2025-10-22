@@ -20,11 +20,31 @@
     <div>@ViewData["LangHeader"]</div>
     
     <form method="post">
-        @Html.AntiForgeryToken()
-        <label>Name<input name="name"/></label><br/>
-        <label>Email<input name="email"/></label><br/>
-        <label>Message<textarea name="message"></textarea></label><br/>
-        <input type="submit" value="Submit"/>
+        <div>
+            <label>Имя:</label>
+            <input asp-for="Form.Name" />
+            <span asp-validation-for="Form.Name" class="text-danger"></span>
+        </div>
+
+        <div>
+            <label>Email:</label>
+            <input asp-for="Form.Email" />
+            <span asp-validation-for="Form.Email" class="text-danger"></span>
+        </div>
+
+        <div>
+            <label>Сообщение:</label>
+            <textarea asp-for="Form.Message"></textarea>
+            <span asp-validation-for="Form.Message" class="text-danger"></span>
+        </div>
+
+        <div>
+            <label>Возраст:</label>
+            <input asp-for="Form.Age" />
+            <span asp-validation-for="Form.Age" class="text-danger"></span>
+        </div>
+
+        <input type="submit" value="Отправить" />
     </form>
 </main>
 <footer>
