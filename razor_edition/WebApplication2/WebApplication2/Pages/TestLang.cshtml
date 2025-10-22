@@ -1,0 +1,26 @@
+@page
+@model WebApplication2.Pages.TestLang
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>@ViewData["title"]</title>
+</head>
+<body>
+<header>
+    <h1> @ViewData["title"] </h1>
+</header>
+<main>
+    <div>@ViewData["message"]</div>
+    <div>@ViewData["LangHeader"]</div>
+</main>
+<footer>
+    &copy; @ViewData["BuildTime"]
+</footer>
+</body>
+</html>

@@ -1,19 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace WebApplication2.Pages;
 
-public class Contact : PageModel
+public class TestLang : PageModel
 {
-    public void OnPost()
-    {
-        var name = Request.Form["name"];
-        var email = Request.Form["email"];
-        var message = Request.Form["message"];
-        
-        Console.WriteLine(name + " " + email);
-    }
-    
     /**
      * Код обработки запроса гет будет запущен
      * ДО построения самой страницы и может оработатать запрос
@@ -38,6 +28,11 @@ public class Contact : PageModel
             ViewData["Title"] = "Contact";
             ViewData["Message"] = "Your contact page.";
         }
+
+        
+        
+        
+        
 
     }
 }

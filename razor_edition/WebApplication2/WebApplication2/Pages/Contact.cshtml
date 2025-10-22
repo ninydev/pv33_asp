@@ -18,6 +18,14 @@
 <main>
     <div>@ViewData["message"]</div>
     <div>@ViewData["LangHeader"]</div>
+    
+    <form method="post">
+        @Html.AntiForgeryToken()
+        <label>Name<input name="name"/></label><br/>
+        <label>Email<input name="email"/></label><br/>
+        <label>Message<textarea name="message"></textarea></label><br/>
+        <input type="submit" value="Submit"/>
+    </form>
 </main>
 <footer>
     &copy; @ViewData["BuildTime"]
