@@ -21,7 +21,7 @@
     
     <form method="post">
         <div>
-            <label>Имя:</label>
+            <label asp-for="Form.Name"></label>
             <input asp-for="Form.Name" />
             <span asp-validation-for="Form.Name" class="text-danger"></span>
         </div>
