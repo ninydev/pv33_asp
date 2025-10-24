@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+    <partial name="Head.cshtml" />
+<body>
+<partial name="Spinner.cshtml"/>
+<partial name="Topbar.cshtml"/>
+
+
+@RenderBody()
+
+<partial  name="EndBody.cshtml"/>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

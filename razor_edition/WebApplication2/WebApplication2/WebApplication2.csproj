@@ -9,6 +9,52 @@
 
     <ItemGroup>
         <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true"/>
+        <None Include="wwwroot\css\bootstrap.min.css" />
+        <None Include="wwwroot\css\style.css" />
+        <None Include="wwwroot\img\about.jpg" />
+        <None Include="wwwroot\img\bg-footer.jpg" />
+        <None Include="wwwroot\img\bg.jpg" />
+        <None Include="wwwroot\img\carousel-1.jpg" />
+        <None Include="wwwroot\img\carousel-2.jpg" />
+        <None Include="wwwroot\img\donation-1.jpg" />
+        <None Include="wwwroot\img\donation-2.jpg" />
+        <None Include="wwwroot\img\donation-3.jpg" />
+        <None Include="wwwroot\img\event-1.jpg" />
+        <None Include="wwwroot\img\event-2.jpg" />
+        <None Include="wwwroot\img\event-3.jpg" />
+        <None Include="wwwroot\img\gallery-1.jpg" />
+        <None Include="wwwroot\img\gallery-2.jpg" />
+        <None Include="wwwroot\img\gallery-3.jpg" />
+        <None Include="wwwroot\img\gallery-4.jpg" />
+        <None Include="wwwroot\img\gallery-5.jpg" />
+        <None Include="wwwroot\img\gallery-6.jpg" />
+        <None Include="wwwroot\img\team-1.jpg" />
+        <None Include="wwwroot\img\team-2.jpg" />
+        <None Include="wwwroot\img\team-3.jpg" />
+        <None Include="wwwroot\img\testimonial-1.jpg" />
+        <None Include="wwwroot\img\testimonial-2.jpg" />
+        <None Include="wwwroot\img\testimonial-3.jpg" />
+        <None Include="wwwroot\js\main.js" />
+        <None Include="wwwroot\lib\animate\animate.css" />
+        <None Include="wwwroot\lib\animate\animate.min.css" />
+        <None Include="wwwroot\lib\counterup\counterup.min.js" />
+        <None Include="wwwroot\lib\easing\easing.js" />
+        <None Include="wwwroot\lib\easing\easing.min.js" />
+        <None Include="wwwroot\lib\owlcarousel\assets\ajax-loader.gif" />
+        <None Include="wwwroot\lib\owlcarousel\assets\owl.carousel.css" />
+        <None Include="wwwroot\lib\owlcarousel\assets\owl.carousel.min.css" />
+        <None Include="wwwroot\lib\owlcarousel\assets\owl.theme.default.css" />
+        <None Include="wwwroot\lib\owlcarousel\assets\owl.theme.default.min.css" />
+        <None Include="wwwroot\lib\owlcarousel\assets\owl.theme.green.css" />
+        <None Include="wwwroot\lib\owlcarousel\assets\owl.theme.green.min.css" />
+        <None Include="wwwroot\lib\owlcarousel\assets\owl.video.play.png" />
+        <None Include="wwwroot\lib\owlcarousel\LICENSE" />
+        <None Include="wwwroot\lib\owlcarousel\owl.carousel.js" />
+        <None Include="wwwroot\lib\owlcarousel\owl.carousel.min.js" />
+        <None Include="wwwroot\lib\waypoints\links.php" />
+        <None Include="wwwroot\lib\waypoints\waypoints.min.js" />
+        <None Include="wwwroot\lib\wow\wow.js" />
+        <None Include="wwwroot\lib\wow\wow.min.js" />
     </ItemGroup>
 
     <ItemGroup>
@@ -17,6 +63,11 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.17"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.17"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.17"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="startbootstrap-clean-blog-jekyll-gh-pages\package-lock.json" />
+      <_ContentIncludedByDefault Remove="startbootstrap-clean-blog-jekyll-gh-pages\package.json" />
     </ItemGroup>
 
 </Project>
