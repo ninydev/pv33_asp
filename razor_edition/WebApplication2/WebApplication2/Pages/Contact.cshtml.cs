@@ -83,12 +83,12 @@ public class Contact : PageModel
         var lang = languages.Split(",")[0];
         if (lang == "uk")
         {
-            ViewData["Title"] = "Контакти";
+            ViewData["PageTitle"] = "Контакти";
             ViewData["Message"] = "Моя контактна сторінка";
         }
         else
         {
-            ViewData["Title"] = "Contact";
+            ViewData["PageTitle"] = "Contact";
             ViewData["Message"] = "Your contact page.";
         }
 

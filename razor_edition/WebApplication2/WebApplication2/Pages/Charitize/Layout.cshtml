@@ -4,10 +4,13 @@
 <body>
 <partial name="Spinner.cshtml"/>
 <partial name="Topbar.cshtml"/>
-
+<partial name="Navbar.cshtml"/>
+<partial name="PageHeader.cshtml"/>
 
 @RenderBody()
 
+<partial  name="NewsLatter.cshtml"/>
+<partial  name="Footer.cshtml"/>
 <partial  name="EndBody.cshtml"/>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
