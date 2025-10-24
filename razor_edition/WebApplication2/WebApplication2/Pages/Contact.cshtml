@@ -2,18 +2,9 @@
 @model WebApplication2.Pages.Contact
 
 @{
-    Layout = null;
+    Layout = "Layout/MasterPage.cshtml";
 }
 
-<!DOCTYPE html>
-
-<html>
-<head>
-    <title>@ViewData["title"]</title>
-</head>
-<body>
-
-<partial name="./Layout/Header.cshtml"/>
 
 <main>
     <div>@ViewData["message"]</div>
@@ -47,6 +38,4 @@
         <input type="submit" value="Отправить"/>
     </form>
 </main>
-<partial name="Layout/Footer.cshtml"/>
-</body>
-</html>
+

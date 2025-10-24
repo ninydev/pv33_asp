@@ -2,25 +2,9 @@
 @model WebApplication2.Pages.About
 
 @{
-    Layout = null;
+    Layout = "Layout/MasterPage.cshtml";
 }
 
-<!DOCTYPE html>
-
-<html>
-<head>
-    <title> @ViewData["title"] </title>
-</head>
-<body>
-
-<partial name="./Layout/Header.cshtml"/>
-
-<div>
-    About page
-</div>
-
-<partial name="./Layout/Footer.cshtml"/>
-
-
-</body>
-</html>
+<main>
+About page
+</main>
