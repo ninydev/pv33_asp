@@ -12,23 +12,23 @@
     <title>@ViewData["title"]</title>
 </head>
 <body>
-<header>
-    <h1> @ViewData["title"] </h1>
-</header>
+
+<partial name="./Layout/Header.cshtml"/>
+
 <main>
     <div>@ViewData["message"]</div>
     <div>@ViewData["LangHeader"]</div>
-    
+
     <form method="post">
         <div>
             <label asp-for="Form.Name"></label>
-            <input asp-for="Form.Name" />
+            <input asp-for="Form.Name"/>
             <span asp-validation-for="Form.Name" class="text-danger"></span>
         </div>
 
         <div>
             <label>Email:</label>
-            <input asp-for="Form.Email" />
+            <input asp-for="Form.Email"/>
             <span asp-validation-for="Form.Email" class="text-danger"></span>
         </div>
 
@@ -40,15 +40,13 @@
 
         <div>
             <label>Возраст:</label>
-            <input asp-for="Form.Age" />
+            <input asp-for="Form.Age"/>
             <span asp-validation-for="Form.Age" class="text-danger"></span>
         </div>
 
-        <input type="submit" value="Отправить" />
+        <input type="submit" value="Отправить"/>
     </form>
 </main>
-<footer>
-    &copy; @ViewData["BuildTime"]
-</footer>
+<partial name="Layout/Footer.cshtml"/>
 </body>
 </html>
