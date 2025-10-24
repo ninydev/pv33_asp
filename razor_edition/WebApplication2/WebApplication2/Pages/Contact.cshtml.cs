@@ -15,7 +15,7 @@ public class Contact : PageModel
         {
             Console.WriteLine("Model is not valid");
         }
-        
+        ViewData["Title"] = "Contact";
         ViewData["Name"] = Form.Name;
         ViewData["Email"] = Form.Email;
         ViewData["Message"] = Form.Message;
