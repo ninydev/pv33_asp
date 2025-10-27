@@ -42,4 +42,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
+// Add a test route
+app.MapGet("/test-route", () => "Hello from a test route!");
+
 app.Run();
