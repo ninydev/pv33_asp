@@ -30,4 +30,10 @@ public class TagModel
     [Display(Name = "Updated at", Description = "Timestamp of last update (computed by the database)")]
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime? UpdatedAt { get; set; }
+    
+    public TagModel()
+    {
+        // fallback for objects created in memory (DbContext will set authoritative values on save)
+        CreatedAt = DateTime.UtcNow;
+    }
 }

@@ -6,7 +6,7 @@ namespace WebApplication1.Data;
 
 public class ApplicationDbContext : IdentityDbContext
 {
-    DbSet<TagModel> Tags { get; set; }
+    public DbSet<TagModel> Tags { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
