@@ -7,6 +7,9 @@ namespace WebApplication1.Models;
 [Index(nameof(Slug), IsUnique = true)]
 public class TagModel
 {
+    [Display(Name = "Posts", Description = "List of posts with this tag")]
+    public ICollection<PostModel> Posts { get; set; } = new List<PostModel>();
+    
     [Key]
     public int Id { get; set; }
 
