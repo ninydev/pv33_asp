@@ -1,4 +1,4 @@
-@model IEnumerable<WebApplication1.Entities.PostEntity>
+@model IEnumerable<WebApplication1.ViewModel.PostViewModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -25,10 +25,7 @@
                 @Html.DisplayNameFor(model => model.Author)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UpdatedAt)
+                @Html.DisplayNameFor(model => model.Tags)
             </th>
             <th></th>
         </tr>
@@ -46,13 +43,30 @@
                 @Html.DisplayFor(modelItem => item.Content)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Author.Id)
+                @Html.DisplayFor(modelItem => item.Author.NormalizedUserName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedAt)
+                @{
+                    // Відображаємо назви тегів через кому; якщо тегів немає — «—»
+                    if (item.Tags != null && item.Tags.Count > 0)
+                    {
+                        var first = true;
+                        foreach (var tag in item.Tags)
+                        {
+                            if (!first)
+                            {
+                                @:,
+                                @: 
+                            }
+                            @tag.Name
+                            first = false;
+                        }
+                    }
+                    else
+                    {
+                        @:—
+                    }
+                }
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

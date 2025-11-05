@@ -26,11 +26,24 @@ namespace WebApplication1.Controllers
         // GET: UserPost
         public async Task<IActionResult> Index()
         {
+            // 1) Витягуємо з БД сутності Post разом із пов’язаними даними.
+            // Include(p => p.Author) та Include(p => p.Tags) — явне завантаження навігаційних властивостей,
+            // щоб уникнути N+1 запитів і мати все необхідне для побудови ViewModel одразу.
             var applicationDbContext =
                 _context.Posts
                     .Include(p => p.Author)
                     .Include(p => p.Tags);
-            return View(await applicationDbContext.ToListAsync());
+            
+            // 2) Матеріалізуємо запит асинхронно (ToListAsync), а вже потім мапимо в ViewModel.
+            // Чому не проектувати одразу в ViewModel через Select?
+            // - Ми централізуємо всю логіку перетворення в PostMapper, дотримуючись SRP.
+            // - Це спрощує супровід і повторне використання (один шлях мапінгу Entity -> ViewModel для різних місць).
+            // - Зберігаємо «чистоту» мапера (без залежності від EF) і зменшуємо ризик помилок у складних проєкціях LINQ-to-Entities.
+            var vm = PostMapper.ToViewModels(await applicationDbContext.ToListAsync());
+            
+            // 3) Повертаємо колекцію ViewModel у View — представлення працює зі зручною для UI моделлю,
+            // а не з сутністю БД. Це підвищує безпеку (без зайвих полів) і спрощує розмітку.
+            return View(vm);
         }
 
         // GET: UserPost/Details/5
