@@ -2,13 +2,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace WebApplication1.Models;
+namespace WebApplication1.Entities;
 
 [Index(nameof(Slug), IsUnique = true)]
 public class TagModel
 {
     [Display(Name = "Posts", Description = "List of posts with this tag")]
-    public ICollection<PostModel> Posts { get; set; } = new List<PostModel>();
+    public ICollection<PostEntity> Posts { get; set; } = new List<PostEntity>();
     
     [Key]
     public int Id { get; set; }

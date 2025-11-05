@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
-using WebApplication1.Models;
+using WebApplication1.Entities;
 
 namespace WebApplication1.Controllers
 {

@@ -7,7 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
-using WebApplication1.Models;
+using WebApplication1.Entities;
+using WebApplication1.Dto;
+using WebApplication1.ViewModel;
+using WebApplication1.Mappers;
 
 namespace WebApplication1.Controllers
 {
@@ -64,7 +67,7 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Create([
-            Bind("Id,Title,Slug,Content,SelectedTagIds")] PostCreateViewModel data)
+            Bind("Id,Title,Slug,Content,SelectedTagIds")] PostCreateDto data)
         {
             if (ModelState.IsValid)
             {
@@ -76,19 +79,18 @@ namespace WebApplication1.Controllers
                 }
                 else
                 {
-                    var postModel = data.ToPostModel(userId);
-                    postModel.AuthorId = userId;
+                    var postEntity = PostMapper.ToEntity(data, userId);
 
                     // Attach selected tags
-                    if (postModel.SelectedTagIds != null && postModel.SelectedTagIds.Count > 0)
+                    if (data.SelectedTagIds != null && data.SelectedTagIds.Count > 0)
                     {
                         var tags = await _context.Tags
-                            .Where(t => postModel.SelectedTagIds.Contains(t.Id))
+                            .Where(t => data.SelectedTagIds.Contains(t.Id))
                             .ToListAsync();
-                        postModel.Tags = tags;
+                        postEntity.Tags = tags;
                     }
 
-                    _context.Add(postModel);
+                    _context.Add(postEntity);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
@@ -121,9 +123,9 @@ namespace WebApplication1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Slug,Content,AuthorId,CreatedAt,UpdatedAt")] PostModel postModel)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Slug,Content,AuthorId,CreatedAt,UpdatedAt")] PostEntity postEntity)
         {
-            if (id != postModel.Id)
+            if (id != postEntity.Id)
             {
                 return NotFound();
             }
@@ -132,12 +134,12 @@ namespace WebApplication1.Controllers
             {
                 try
                 {
-                    _context.Update(postModel);
+                    _context.Update(postEntity);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PostModelExists(postModel.Id))
+                    if (!PostModelExists(postEntity.Id))
                     {
                         return NotFound();
                     }
@@ -148,8 +150,8 @@ namespace WebApplication1.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AuthorId"] = new SelectList(_context.Users, "Id", "Id", postModel.AuthorId);
-            return View(postModel);
+            ViewData["AuthorId"] = new SelectList(_context.Users, "Id", "Id", postEntity.AuthorId);
+            return View(postEntity);
         }
 
         // GET: UserPost/Delete/5
