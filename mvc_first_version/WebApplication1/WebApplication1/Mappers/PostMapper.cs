@@ -61,6 +61,41 @@ namespace WebApplication1.Mappers
         }
 
         /// <summary>
+        /// Застосовує зміни з PostUpdateDto до наявної сутності PostEntity.
+        /// </summary>
+        /// <remarks>
+        /// - Не змінюємо авторство та службові поля (AuthorId, CreatedAt, UpdatedAt тут не встановлюємо вручну).
+        /// - Робота з тегами (many-to-many) має виконуватись у сервісі/контролері, де доступний DbContext.
+        /// </remarks>
+        public static void ApplyUpdates(PostEntity entity, PostUpdateDto dto)
+        {
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+            if (entity.Id != dto.Id) throw new ArgumentException("Id сутності та DTO не збігаються");
+
+            entity.Title = dto.Title?.Trim();
+            entity.Slug = dto.Slug?.Trim();
+            entity.Content = dto.Content?.Trim();
+            // UpdatedAt як правило виставляє БД або трекінг EF, залишаємо це поза мапером
+        }
+
+        /// <summary>
+        /// Створює PostUpdateDto з сутності для попереднього заповнення форми редагування.
+        /// </summary>
+        public static PostUpdateDto ToUpdateDto(PostEntity entity)
+        {
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
+            return new PostUpdateDto
+            {
+                Id = entity.Id,
+                Title = entity.Title,
+                Slug = entity.Slug,
+                Content = entity.Content,
+                SelectedTagIds = entity.Tags?.Select(t => t.Id).ToList() ?? new List<int>()
+            };
+        }
+
+        /// <summary>
         /// Мапінг колекції сутностей у колекцію в’юмоделей.
         /// </summary>
         public static IEnumerable<PostViewModel> ToViewModels(IEnumerable<PostEntity> entities)
