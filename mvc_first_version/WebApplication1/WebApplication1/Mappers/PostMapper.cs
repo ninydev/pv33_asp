@@ -77,6 +77,7 @@ namespace WebApplication1.Mappers
             entity.Slug = dto.Slug?.Trim();
             entity.Content = dto.Content?.Trim();
             // UpdatedAt як правило виставляє БД або трекінг EF, залишаємо це поза мапером
+            // entity.UpdatedAt = DateTime.UtcNow;
         }
 
         /// <summary>

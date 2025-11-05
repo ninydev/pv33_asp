@@ -1,4 +1,4 @@
-@model WebApplication1.Entities.PostEntity
+@model WebApplication1.Dto.PostUpdateDto
 
 @{
     ViewData["Title"] = "Edit";
@@ -6,10 +6,10 @@
 
 <h1>Edit</h1>
 
-<h4>PostModel</h4>
+<h4>Post</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
@@ -25,21 +25,18 @@
             </div>
             <div class="form-group">
                 <label asp-for="Content" class="control-label"></label>
-                <input asp-for="Content" class="form-control" />
+                <textarea asp-for="Content" class="form-control" rows="6"></textarea>
                 <span asp-validation-for="Content" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="AuthorId" class="control-label"></label>
-                <select asp-for="AuthorId" class="form-control" asp-items="ViewBag.AuthorId"></select>
-                <span asp-validation-for="AuthorId" class="text-danger"></span>
+                @* Працюємо з SelectedTagIds як з мультивибором тегів: ViewBag.Tags надає список усіх тегів *@
+                <label asp-for="SelectedTagIds" class="control-label"></label>
+                <select asp-for="SelectedTagIds" multiple="multiple" class="form-control" asp-items="ViewBag.Tags"></select>
+                <span asp-validation-for="SelectedTagIds" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
+            <div class="form-group mt-3">
                 <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
             </div>
         </form>
     </div>
