@@ -81,7 +81,14 @@ namespace WebApplication1.Controllers
                 {
                     var postEntity = PostMapper.ToEntity(data, userId);
 
-                    // Attach selected tags
+                    // Пояснення (чому не в Mapper):
+                    // - Mapper повинен залишатися «чистим» і не знати про джерела даних (DbContext, SQL, HTTP тощо).
+                    // - Прив’язка тегів потребує доступу до БД (завантаження сутностей Tag за SelectedTagIds),
+                    //   тому це відповідальність шару доступу до даних або сервісу/контролера, але не мапера.
+                    // - Так ми дотримуємось SRP (Single Responsibility Principle) і спрощуємо тестування мапера.
+                    //
+                    // Альтернатива: винести цей блок у доменний сервіс (наприклад, IPostService.AttachTagsAsync),
+                    // який інкапсулює роботу з DbContext. Контролер тоді викликатиме сервіс, а мапер залишиться простим.
                     if (data.SelectedTagIds != null && data.SelectedTagIds.Count > 0)
                     {
                         var tags = await _context.Tags
