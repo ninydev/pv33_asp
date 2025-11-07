@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using WebApplication1.Data;
 using WebApplication1.Entities;
 using WebApplication1.Dto;
@@ -14,15 +15,29 @@ using WebApplication1.Mappers;
 
 namespace WebApplication1.Controllers
 {
+    /// <summary>
+    /// MVC-контролер для роботи з публікаціями користувачів: перегляд, створення, редагування та видалення.
+    /// Дотримується кращих практик ASP.NET MVC: розділення відповідальностей, захист від over-posting, валідація моделі, атрибути авторизації.
+    /// </summary>
     public class UserPostController : Controller
     {
         private readonly ApplicationDbContext _context;
 
+        /// <summary>
+        /// Конструктор контролера. Ініціалізує доступ до контексту БД.
+        /// </summary>
+        /// <param name="context">Екземпляр ApplicationDbContext для роботи з даними.</param>
         public UserPostController(ApplicationDbContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Повертає список усіх публікацій користувачів для відображення у вигляді.
+        /// Завантажує автора та теги кожного поста та мапить їх у ViewModel.
+        /// </summary>
+        /// <returns>HTML-подання зі списком публікацій (Status 200).</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         // GET: UserPost
         public async Task<IActionResult> Index()
         {
@@ -46,6 +61,14 @@ namespace WebApplication1.Controllers
             return View(vm);
         }
 
+        /// <summary>
+        /// Повертає деталі конкретної публікації за ідентифікатором.
+        /// Завантажує пов’язані дані (автор, теги) і мапить їх у ViewModel для відображення.
+        /// </summary>
+        /// <param name="id">Ідентифікатор публікації.</param>
+        /// <returns>HTML-подання з деталями (200) або 404, якщо запис не знайдено.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         // GET: UserPost/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -77,6 +100,14 @@ namespace WebApplication1.Controllers
         }
 
         // GET: UserPost/Create
+        /// <summary>
+        /// Відображає форму створення нової публікації.
+        /// Доступ лише для автентифікованих користувачів.
+        /// </summary>
+        /// <returns>HTML-подання форми створення (200) або 401/403 при відсутності доступу.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [Authorize]
         public IActionResult Create()
         {
@@ -87,6 +118,15 @@ namespace WebApplication1.Controllers
         // POST: UserPost/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Обробляє відправку форми створення публікації: валідаторує дані, створює сутність та зберігає в БД.
+        /// </summary>
+        /// <param name="data">Дані форми створення публікації.</param>
+        /// <returns>Редірект на список (302) при успіху або повторне відображення форми з помилками (200). Для неавторизованих — 401/403.</returns>
+        [ProducesResponseType(StatusCodes.Status302Found)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -132,6 +172,13 @@ namespace WebApplication1.Controllers
             return View(data);
         }
 
+        /// <summary>
+        /// Відображає форму редагування публікації із попереднім заповненням полів і вибраних тегів.
+        /// </summary>
+        /// <param name="id">Ідентифікатор публікації для редагування.</param>
+        /// <returns>HTML-подання форми (200) або 404, якщо запис не знайдено.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         // GET: UserPost/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -161,6 +208,17 @@ namespace WebApplication1.Controllers
         // POST: UserPost/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Обробляє відправку форми редагування публікації: застосовує зміни та оновлює зв'язки тегів.
+        /// </summary>
+        /// <param name="id">Ідентифікатор публікації з маршруту.</param>
+        /// <param name="data">Дані форми редагування.</param>
+        /// <returns>Редірект на список (302) при успіху або повторне відображення форми з помилками (200). 404 — якщо запис не знайдено. 401/403 — при відсутності доступу.</returns>
+        [ProducesResponseType(StatusCodes.Status302Found)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -217,6 +275,13 @@ namespace WebApplication1.Controllers
             return View(data);
         }
 
+        /// <summary>
+        /// Відображає підтвердження видалення публікації.
+        /// </summary>
+        /// <param name="id">Ідентифікатор публікації для видалення.</param>
+        /// <returns>HTML-подання підтвердження (200) або 404, якщо запис не знайдено.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         // GET: UserPost/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -237,6 +302,14 @@ namespace WebApplication1.Controllers
         }
 
         // POST: UserPost/Delete/5
+        /// <summary>
+        /// Остаточно видаляє публікацію після підтвердження користувачем.
+        /// </summary>
+        /// <param name="id">Ідентифікатор публікації, яку потрібно видалити.</param>
+        /// <returns>Редірект на список публікацій (302). 401/403 — при відсутності доступу.</returns>
+        [ProducesResponseType(StatusCodes.Status302Found)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -252,6 +325,11 @@ namespace WebApplication1.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Перевіряє, чи існує публікація з вказаним ідентифікатором.
+        /// </summary>
+        /// <param name="id">Ідентифікатор публікації.</param>
+        /// <returns>True, якщо запис існує; інакше — False.</returns>
         private bool PostModelExists(int id)
         {
             return _context.Posts.Any(e => e.Id == id);

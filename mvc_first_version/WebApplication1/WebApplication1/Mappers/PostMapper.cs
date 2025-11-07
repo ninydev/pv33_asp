@@ -43,6 +43,11 @@ namespace WebApplication1.Mappers
         /// <summary>
         /// Перетворює PostEntity у PostViewModel для відображення у представленнях.
         /// </summary>
+        /// <remarks>
+        /// Щоб уникнути циклічних залежностей під час серіалізації (Post -> Author -> Posts -> ...),
+        /// мапимо навігаційні властивості у спрощені Show-моделі (Author, Tags).
+        /// Повертаємо лише значущі дані для UI: Id, Title, Slug, Content, Author(Id, UserName), Tags(Id, Name, Slug).
+        /// </remarks>
         public static PostViewModel ToViewModel(PostEntity entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
@@ -53,10 +58,10 @@ namespace WebApplication1.Mappers
                 Title = entity.Title,
                 Slug = entity.Slug,
                 Content = entity.Content,
-                Author = entity.Author,
+                Author = entity.Author?.ToShowViewModel(),
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt,
-                Tags = entity.Tags?.ToList() ?? new List<TagModel>()
+                Tags = entity.Tags?.ToShowViewModels().ToList() ?? new List<ShowTagViewModel>()
             };
         }
 

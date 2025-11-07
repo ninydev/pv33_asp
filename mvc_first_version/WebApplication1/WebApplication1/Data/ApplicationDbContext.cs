@@ -4,9 +4,9 @@ using WebApplication1.Entities;
 
 namespace WebApplication1.Data;
 
-public class ApplicationDbContext : IdentityDbContext<MyIdentityUser>
+public class ApplicationDbContext : IdentityDbContext<MyIdentityUserEntity>
 {
-    public DbSet<TagModel> Tags { get; set; }
+    public DbSet<TagEntity> Tags { get; set; }
     public DbSet<BookModel> Books { get; set; }
     
     public DbSet<PostEntity> Posts { get; set; }

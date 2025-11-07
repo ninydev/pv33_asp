@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
-using WebApplication1.Entities;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using WebApplication1.ViewModel;
 
 namespace WebApplication1.ViewModel;
-using System.ComponentModel.DataAnnotations;
 
 /// <summary>
 /// ViewModel (модель подання) — це тип класів, призначений для відображення даних у представленнях (Views).
@@ -35,7 +34,7 @@ public class PostViewModel
     public string Content { get; set; }
     
     [Display(Name = "Автор", Description = "Користувач, який створив публікацію")]
-    public MyIdentityUser Author { get; set; }
+    public ShowUserViewModel Author { get; set; }
     
     [Display(Name = "Створено", Description = "Мітка часу створення запису")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}", ApplyFormatInEditMode = false)]
@@ -46,5 +45,5 @@ public class PostViewModel
     public DateTime? UpdatedAt { get; set; }
     
     [Display(Name = "Теги", Description = "Список тегів, прив’язаних до публікації")]
-    public ICollection<TagModel> Tags { get; set; } = new List<TagModel>();
+    public ICollection<ShowTagViewModel> Tags { get; set; } = new List<ShowTagViewModel>();
 }

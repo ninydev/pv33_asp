@@ -1,12 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebApplication1.Entities;
 
 [Index(nameof(Slug), IsUnique = true)]
-public class TagModel
+public class TagEntity
 {
+    // [JsonIgnore]
     [Display(Name = "Posts", Description = "List of posts with this tag")]
     public ICollection<PostEntity> Posts { get; set; } = new List<PostEntity>();
     
@@ -34,7 +36,7 @@ public class TagModel
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime? UpdatedAt { get; set; }
     
-    public TagModel()
+    public TagEntity()
     {
         // fallback for objects created in memory (DbContext will set authoritative values on save)
         CreatedAt = DateTime.UtcNow;

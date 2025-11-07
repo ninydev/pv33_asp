@@ -52,7 +52,7 @@ public class PostEntity
     
     [ForeignKey("Author")]
     public string AuthorId { get; set; }
-    public MyIdentityUser Author { get; set; }
+    public MyIdentityUserEntity Author { get; set; }
     
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public DateTime CreatedAt { get; set; }
@@ -60,7 +60,7 @@ public class PostEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime? UpdatedAt { get; set; }
     
-    public ICollection<TagModel> Tags { get; set; } = new List<TagModel>();
+    public ICollection<TagEntity> Tags { get; set; } = new List<TagEntity>();
 
     public PostEntity()
     {

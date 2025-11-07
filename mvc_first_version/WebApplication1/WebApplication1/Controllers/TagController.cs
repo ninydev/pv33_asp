@@ -54,15 +54,15 @@ namespace WebApplication1
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Slug,CreatedAt,UpdatedAt")] TagModel tagModel)
+        public async Task<IActionResult> Create([Bind("Id,Name,Slug,CreatedAt,UpdatedAt")] TagEntity tagEntity)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(tagModel);
+                _context.Add(tagEntity);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(tagModel);
+            return View(tagEntity);
         }
 
         // GET: Tag/Edit/5
@@ -86,9 +86,9 @@ namespace WebApplication1
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Slug,CreatedAt,UpdatedAt")] TagModel tagModel)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Slug,CreatedAt,UpdatedAt")] TagEntity tagEntity)
         {
-            if (id != tagModel.Id)
+            if (id != tagEntity.Id)
             {
                 return NotFound();
             }
@@ -97,12 +97,12 @@ namespace WebApplication1
             {
                 try
                 {
-                    _context.Update(tagModel);
+                    _context.Update(tagEntity);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TagModelExists(tagModel.Id))
+                    if (!TagModelExists(tagEntity.Id))
                     {
                         return NotFound();
                     }
@@ -113,7 +113,7 @@ namespace WebApplication1
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(tagModel);
+            return View(tagEntity);
         }
 
         // GET: Tag/Delete/5

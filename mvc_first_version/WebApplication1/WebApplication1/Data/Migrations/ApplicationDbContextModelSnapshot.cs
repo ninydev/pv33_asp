@@ -149,7 +149,7 @@ namespace WebApplication1.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("PostEntityTagModel", b =>
+            modelBuilder.Entity("PostEntityTagEntity", b =>
                 {
                     b.Property<int>("PostsId")
                         .HasColumnType("INTEGER");
@@ -161,7 +161,7 @@ namespace WebApplication1.Data.Migrations
 
                     b.HasIndex("TagsId");
 
-                    b.ToTable("PostEntityTagModel");
+                    b.ToTable("PostEntityTagEntity");
                 });
 
             modelBuilder.Entity("WebApplication1.Entities.BookModel", b =>
@@ -188,7 +188,7 @@ namespace WebApplication1.Data.Migrations
                     b.ToTable("Books");
                 });
 
-            modelBuilder.Entity("WebApplication1.Entities.MyIdentityUser", b =>
+            modelBuilder.Entity("WebApplication1.Entities.MyIdentityUserEntity", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -292,7 +292,7 @@ namespace WebApplication1.Data.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("WebApplication1.Entities.TagModel", b =>
+            modelBuilder.Entity("WebApplication1.Entities.TagEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -335,7 +335,7 @@ namespace WebApplication1.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("WebApplication1.Entities.MyIdentityUser", null)
+                    b.HasOne("WebApplication1.Entities.MyIdentityUserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -344,7 +344,7 @@ namespace WebApplication1.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("WebApplication1.Entities.MyIdentityUser", null)
+                    b.HasOne("WebApplication1.Entities.MyIdentityUserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -359,7 +359,7 @@ namespace WebApplication1.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebApplication1.Entities.MyIdentityUser", null)
+                    b.HasOne("WebApplication1.Entities.MyIdentityUserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -368,14 +368,14 @@ namespace WebApplication1.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("WebApplication1.Entities.MyIdentityUser", null)
+                    b.HasOne("WebApplication1.Entities.MyIdentityUserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PostEntityTagModel", b =>
+            modelBuilder.Entity("PostEntityTagEntity", b =>
                 {
                     b.HasOne("WebApplication1.Entities.PostEntity", null)
                         .WithMany()
@@ -383,7 +383,7 @@ namespace WebApplication1.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebApplication1.Entities.TagModel", null)
+                    b.HasOne("WebApplication1.Entities.TagEntity", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -392,7 +392,7 @@ namespace WebApplication1.Data.Migrations
 
             modelBuilder.Entity("WebApplication1.Entities.PostEntity", b =>
                 {
-                    b.HasOne("WebApplication1.Entities.MyIdentityUser", "Author")
+                    b.HasOne("WebApplication1.Entities.MyIdentityUserEntity", "Author")
                         .WithMany("Posts")
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -401,7 +401,7 @@ namespace WebApplication1.Data.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("WebApplication1.Entities.MyIdentityUser", b =>
+            modelBuilder.Entity("WebApplication1.Entities.MyIdentityUserEntity", b =>
                 {
                     b.Navigation("Posts");
                 });
