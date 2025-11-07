@@ -14,10 +14,10 @@ public static class TagMapper
     /// <summary>
     /// Перетворює сутність тега у спрощений в’юмодель.
     /// </summary>
-    public static ShowTagViewModel ToShowViewModel(this TagEntity tag)
+    public static ShortTagViewModel ToShowViewModel(this TagEntity tag)
     {
         if (tag == null) return null;
-        return new ShowTagViewModel
+        return new ShortTagViewModel
         {
             Id = tag.Id,
             Name = tag.Name,
@@ -28,7 +28,7 @@ public static class TagMapper
     /// <summary>
     /// Перетворює колекцію сутностей тегів у колекцію спрощених моделей.
     /// </summary>
-    public static IEnumerable<ShowTagViewModel> ToShowViewModels(this IEnumerable<TagEntity> tags)
+    public static IEnumerable<ShortTagViewModel> ToShowViewModels(this IEnumerable<TagEntity> tags)
     {
         if (tags == null) yield break;
         foreach (var t in tags)

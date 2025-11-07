@@ -13,10 +13,10 @@ public static class MyIndentityuserMapper
     /// <summary>
     /// Перетворює сутність користувача у спрощений вигляд.
     /// </summary>
-    public static ShowUserViewModel ToShowViewModel(this MyIdentityUserEntity user)
+    public static ShortUserViewModel ToShowViewModel(this MyIdentityUserEntity user)
     {
         if (user == null) return null;
-        return new ShowUserViewModel
+        return new ShortUserViewModel
         {
             Id = user.Id,
             UserName = user.UserName
@@ -26,7 +26,7 @@ public static class MyIndentityuserMapper
     /// <summary>
     /// Перетворює колекцію сутностей користувачів у колекцію ShowUserViewModel.
     /// </summary>
-    public static IEnumerable<ShowUserViewModel> ToShowViewModels(this IEnumerable<MyIdentityUserEntity> users)
+    public static IEnumerable<ShortUserViewModel> ToShowViewModels(this IEnumerable<MyIdentityUserEntity> users)
     {
         if (users == null) yield break;
         foreach (var u in users)

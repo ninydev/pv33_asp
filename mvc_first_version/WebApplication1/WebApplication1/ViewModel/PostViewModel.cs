@@ -34,7 +34,7 @@ public class PostViewModel
     public string Content { get; set; }
     
     [Display(Name = "Автор", Description = "Користувач, який створив публікацію")]
-    public ShowUserViewModel Author { get; set; }
+    public ShortUserViewModel Author { get; set; }
     
     [Display(Name = "Створено", Description = "Мітка часу створення запису")]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}", ApplyFormatInEditMode = false)]
@@ -45,5 +45,5 @@ public class PostViewModel
     public DateTime? UpdatedAt { get; set; }
     
     [Display(Name = "Теги", Description = "Список тегів, прив’язаних до публікації")]
-    public ICollection<ShowTagViewModel> Tags { get; set; } = new List<ShowTagViewModel>();
+    public ICollection<ShortTagViewModel> Tags { get; set; } = new List<ShortTagViewModel>();
 }

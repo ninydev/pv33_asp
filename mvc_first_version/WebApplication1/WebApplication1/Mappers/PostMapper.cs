@@ -39,6 +39,21 @@ namespace WebApplication1.Mappers
                 // CreatedAt ініціалізується у конструкторі PostEntity або може бути заповнений БД
             };
         }
+        
+        public static PostEntity ToEntity(PostUpdateDto dto, string authorId)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+            if (string.IsNullOrWhiteSpace(authorId)) throw new ArgumentException("AuthorId is required", nameof(authorId));
+
+            return new PostEntity
+            {
+                Title = dto.Title?.Trim(),
+                Slug = dto.Slug?.Trim(),
+                Content = dto.Content?.Trim(),
+                AuthorId = authorId,
+                // CreatedAt ініціалізується у конструкторі PostEntity або може бути заповнений БД
+            };
+        }
 
         /// <summary>
         /// Перетворює PostEntity у PostViewModel для відображення у представленнях.
@@ -61,7 +76,7 @@ namespace WebApplication1.Mappers
                 Author = entity.Author?.ToShowViewModel(),
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt,
-                Tags = entity.Tags?.ToShowViewModels().ToList() ?? new List<ShowTagViewModel>()
+                Tags = entity.Tags?.ToShowViewModels().ToList() ?? new List<ShortTagViewModel>()
             };
         }
 

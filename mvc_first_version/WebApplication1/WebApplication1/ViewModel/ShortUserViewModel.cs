@@ -4,7 +4,7 @@
 /// Спрощена модель користувача для відображення (уникаємо циклічних залежностей).
 /// Містить лише значущі поля для UI.
 /// </summary>
-public class ShowUserViewModel
+public class ShortUserViewModel
 {
     // Ідентифікатор користувача (IdentityUser.Id — рядок)
     public string Id { get; set; }

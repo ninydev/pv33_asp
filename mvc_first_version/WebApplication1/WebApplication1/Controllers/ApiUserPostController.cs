@@ -2,18 +2,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
+using WebApplication1.Dto;
 using WebApplication1.Entities;
 using WebApplication1.Mappers;
 using WebApplication1.ViewModel;
 
 namespace WebApplication1.Controllers
 {
+    /// <summary>
+    /// API контролер для роботи з публікаціями (пости користувачів).
+    /// Забезпечує CRUD-операції та повертає дані у вигляді ViewModel без циклічних залежностей.
+    /// </summary>
+    /// <remarks>
+    /// Дотримуємося найкращих практик:
+    /// - Чіткі коди відповідей і анотації [ProducesResponseType]
+    /// - AsNoTracking для операцій читання (покращує продуктивність)
+    /// - Валідація ModelState та перевірки авторства для змінних операцій
+    /// - CancellationToken для коректного скасування довгих запитів
+    /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class ApiUserPostController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -23,49 +38,103 @@ namespace WebApplication1.Controllers
             _context = context;
         }
 
-        // GET: api/ApiUserPost
+        /// <summary>
+        /// Отримати список всіх публікацій.
+        /// </summary>
+        /// <param name="ct">Токен скасування операції</param>
+        /// <returns>Колекцію постів у вигляді PostViewModel</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PostViewModel>>> GetPosts()
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<PostViewModel>))]
+        public async Task<ActionResult<IEnumerable<PostViewModel>>> GetPosts(CancellationToken ct = default)
         {
-            var applicationDbContext =
-                _context.Posts
-                    .Include(p => p.Author)
-                    .Include(p => p.Tags);
+            // AsNoTracking — швидше для читання, коли не плануємо змінювати сутності
+            var query = _context.Posts
+                .AsNoTracking()
+                .Include(p => p.Author)
+                .Include(p => p.Tags);
             
-            var vm = PostMapper.ToViewModels(await applicationDbContext.ToListAsync());
-            
+            var list = await query.ToListAsync(ct);
+            var vm = PostMapper.ToViewModels(list);
             return Ok(vm);
         }
 
-        // GET: api/ApiUserPost/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PostEntity>> GetPostEntity(int id)
+        /// <summary>
+        /// Отримати публікацію за ідентифікатором.
+        /// </summary>
+        /// <param name="id">Ідентифікатор поста</param>
+        /// <param name="ct">Токен скасування операції</param>
+        /// <returns>Публікацію у вигляді PostViewModel або 404, якщо не знайдено</returns>
+        [HttpGet("{id:int}", Name = nameof(GetPostEntity))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PostViewModel))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PostViewModel>> GetPostEntity(int id, CancellationToken ct = default)
         {
-            var postEntity = await _context.Posts.FindAsync(id);
+            var postEntity = await _context.Posts
+                .AsNoTracking()
+                .Include(p => p.Author)
+                .Include(p => p.Tags)
+                .FirstOrDefaultAsync(p => p.Id == id, ct);
 
             if (postEntity == null)
             {
                 return NotFound();
             }
 
-            return postEntity;
+            return Ok(PostMapper.ToViewModel(postEntity));
         }
 
-        // PUT: api/ApiUserPost/5
+        /// <summary>
+        /// Оновити існуючу публікацію.
+        /// </summary>
+        /// <param name="id">Ідентифікатор поста</param>
+        /// <param name="data">Дані для оновлення</param>
+        /// <param name="ct">Токен скасування операції</param>
+        /// <returns>204 NoContent у разі успіху; 400/403/404 у разі помилок</returns>
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPostEntity(int id, PostEntity postEntity)
+        [HttpPut("{id:int}")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PutPostEntity(int id, [FromBody] PostUpdateDto data, CancellationToken ct = default)
         {
-            if (id != postEntity.Id)
+            if (data == null)
             {
-                return BadRequest();
+                return BadRequest("Порожні дані запиту.");
+            }
+            if (id != data.Id)
+            {
+                return BadRequest("Id у маршруті і тілі не збігаються.");
+            }
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
             }
 
-            _context.Entry(postEntity).State = EntityState.Modified;
+            var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                ModelState.AddModelError(string.Empty, "Не вдалося визначити поточного користувача.");
+                return BadRequest(ModelState);
+            }
+
+            var entity = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id, ct);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+            // Перевірка авторства: дозволяємо змінювати лише власнику
+            if (!string.Equals(entity.AuthorId, userId, StringComparison.Ordinal))
+            {
+                return Forbid();
+            }
+
+            PostMapper.ApplyUpdates(entity, data);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -73,38 +142,80 @@ namespace WebApplication1.Controllers
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
         }
 
-        // POST: api/ApiUserPost
+        /// <summary>
+        /// Створити нову публікацію для поточного користувача.
+        /// </summary>
+        /// <param name="data">Дані нового поста</param>
+        /// <param name="ct">Токен скасування операції</param>
+        /// <returns>Створений пост (201 Created) з Location заголовком</returns>
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<PostEntity>> PostPostEntity(PostEntity postEntity)
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(PostViewModel))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PostViewModel>> PostPostEntity([FromBody] PostCreateDto data, CancellationToken ct = default)
         {
-            _context.Posts.Add(postEntity);
-            await _context.SaveChangesAsync();
+            if (data == null)
+            {
+                return BadRequest("Порожні дані запиту.");
+            }
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
 
-            return CreatedAtAction("GetPostEntity", new { id = postEntity.Id }, postEntity);
+            var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                ModelState.AddModelError(string.Empty, "Не вдалося визначити поточного користувача.");
+                return BadRequest(ModelState);
+            }
+            var postEntity = PostMapper.ToEntity(data, userId);
+            _context.Posts.Add(postEntity);
+            await _context.SaveChangesAsync(ct);
+
+            // Повертаємо 201 Created із правильним посиланням на ресурс
+            return CreatedAtAction(nameof(GetPostEntity), new { id = postEntity.Id }, PostMapper.ToViewModel(postEntity));
         }
 
-        // DELETE: api/ApiUserPost/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePostEntity(int id)
+        /// <summary>
+        /// Видалити публікацію за ідентифікатором.
+        /// </summary>
+        /// <param name="id">Ідентифікатор поста</param>
+        /// <param name="ct">Токен скасування операції</param>
+        /// <returns>204 NoContent у разі успіху; 403/404 у разі помилок</returns>
+        [HttpDelete("{id:int}")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeletePostEntity(int id, CancellationToken ct = default)
         {
-            var postEntity = await _context.Posts.FindAsync(id);
+            var postEntity = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id, ct);
             if (postEntity == null)
             {
                 return NotFound();
             }
 
+            var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                ModelState.AddModelError(string.Empty, "Не вдалося визначити поточного користувача.");
+                return BadRequest(ModelState);
+            }
+            if (!string.Equals(postEntity.AuthorId, userId, StringComparison.Ordinal))
+            {
+                return Forbid();
+            }
+
             _context.Posts.Remove(postEntity);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
 
             return NoContent();
         }
