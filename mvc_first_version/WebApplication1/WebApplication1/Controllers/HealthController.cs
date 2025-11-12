@@ -1,11 +1,10 @@
-namespace WebApplication1.Controllers;
-
-using System.Data;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite; // Замените при другой БД
-using Microsoft.Extensions.Options;
+using Microsoft.Data.Sqlite;
 
+namespace WebApplication1.Controllers;
+
+// Замените при другой БД
 
 [ApiController]
 [Route("check/health")]
@@ -16,7 +15,7 @@ public class HealthController : ControllerBase
 
     public HealthController(IConfiguration config, ILogger<HealthController> logger)
     {
-        _connectionString = config.GetConnectionString("DefaultConnection") 
+        _connectionString = config.GetConnectionString("DefaultConnection")
                             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         _logger = logger;
     }
@@ -65,8 +64,8 @@ public class HealthController : ControllerBase
             cmd.CommandText = "SELECT 1;";
             var result = await cmd.ExecuteScalarAsync();
 
-            return result is long l && l == 1
-                   || result is int i && i == 1;
+            return (result is long l && l == 1)
+                   || (result is int i && i == 1);
         }
         catch (Exception ex)
         {
@@ -81,8 +80,9 @@ public class HealthController : ControllerBase
         var contentRoot = AppContext.BaseDirectory;
         var rootPath = Path.GetPathRoot(contentRoot) ?? "/";
         var drive = DriveInfo.GetDrives()
-            .FirstOrDefault(d => d.IsReady && string.Equals(d.RootDirectory.FullName, rootPath, StringComparison.OrdinalIgnoreCase))
-            ?? DriveInfo.GetDrives().FirstOrDefault(d => d.IsReady);
+                        .FirstOrDefault(d => d.IsReady && string.Equals(d.RootDirectory.FullName, rootPath,
+                            StringComparison.OrdinalIgnoreCase))
+                    ?? DriveInfo.GetDrives().FirstOrDefault(d => d.IsReady);
 
         if (drive == null)
             return ("unknown", 0, 0);
@@ -98,7 +98,7 @@ public class HealthController : ControllerBase
         // Частная память: на Windows можно через PerformanceCounter/PROCESS_MEMORY_COUNTERS; здесь приблизим PrivateMemorySize64
         var privateBytes = proc.PrivateMemorySize64;
         // Общий объём выделенной управляемой памяти (последний GC snapshot)
-        var gcAllocated = GC.GetTotalMemory(forceFullCollection: false);
+        var gcAllocated = GC.GetTotalMemory(false);
 
         return (workingSet, privateBytes, gcAllocated);
     }

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebApplication1.Entities;
@@ -8,12 +7,17 @@ namespace WebApplication1.Entities;
 [Index(nameof(Slug), IsUnique = true)]
 public class TagEntity
 {
+    public TagEntity()
+    {
+        // fallback for objects created in memory (DbContext will set authoritative values on save)
+        CreatedAt = DateTime.UtcNow;
+    }
+
     // [JsonIgnore]
     [Display(Name = "Posts", Description = "List of posts with this tag")]
     public ICollection<PostEntity> Posts { get; set; } = new List<PostEntity>();
-    
-    [Key]
-    public int Id { get; set; }
+
+    [Key] public int Id { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -35,10 +39,4 @@ public class TagEntity
     [Display(Name = "Updated at", Description = "Timestamp of last update (computed by the database)")]
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime? UpdatedAt { get; set; }
-    
-    public TagEntity()
-    {
-        // fallback for objects created in memory (DbContext will set authoritative values on save)
-        CreatedAt = DateTime.UtcNow;
-    }
 }

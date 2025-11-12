@@ -65,7 +65,7 @@ function fadeOut(el) {
             requestAnimationFrame(fade);
         }
     })();
-};
+}
 
 function fadeIn(el, display) {
     el.style.opacity = 0;
@@ -77,4 +77,4 @@ function fadeIn(el, display) {
             requestAnimationFrame(fade);
         }
     })();
-};
+}
