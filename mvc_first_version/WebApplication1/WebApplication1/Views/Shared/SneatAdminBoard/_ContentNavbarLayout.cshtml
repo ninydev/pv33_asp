@@ -1,4 +1,4 @@
-@await Html.PartialAsync("Sections/_Variables")
+@await Html.PartialAsync("SneatAdminBoard/Sections/_Variables")
 @{
   TempData.Keep();
   Layout = "SneatAdminBoard/_CommonMasterLayout";
@@ -38,7 +38,7 @@
 
     @if (isMenu)
     {
-      @await Html.PartialAsync("Sections/Menu/_VerticalMenu")
+      @await Html.PartialAsync("SneatAdminBoard/Sections/Menu/_VerticalMenu")
     }
 
     <!-- Layout page -->
@@ -46,7 +46,7 @@
       <!-- Navbar -->
       @if (@ViewData["isNavbar"] != null && Convert.ToBoolean(@ViewData["isNavbar"]))
       {
-        @await Html.PartialAsync("Sections/Navbar/_Navbar")
+        @await Html.PartialAsync("SneatAdminBoard/Sections/Navbar/_Navbar")
       }
       <!-- / Navbar -->
 
@@ -63,7 +63,7 @@
         <!-- Footer -->
         @if (@ViewData["isFooter"] != null && Convert.ToBoolean(@ViewData["isFooter"]))
         {
-          @await Html.PartialAsync("Sections/Footer/_Footer")
+          @await Html.PartialAsync("SneatAdminBoard/Sections/Footer/_Footer")
         }
         <!-- / Footer -->
         <div class="content-backdrop fade"></div>
