@@ -1,8 +1,45 @@
-
+@model IEnumerable<MyIdentityUserEntity>
 @{
     Layout = "SneatAdminBoard/_ContentNavbarLayout";
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h1> Admin Board </h1>
+
+<div class="card">
+    <h5 class="card-header"> Admin Board : Users </h5>
+
+
+
+    <div class="table-responsive text-nowrap">
+        <table class="table">
+            <thead>
+            <tr>
+                <th> Email Name</th>
+                <th> Action </th>
+            </tr>
+            </thead>
+
+            <tbody>
+        
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                </tr>
+            }
+
+
+            </tbody>
+
+            <tfoot>
+            <tr><td>
+                Total Users: @Model.Count()
+            </td></tr>
+            </tfoot>
+        </table>
+
+    </div>
+</div>
+
+
 
