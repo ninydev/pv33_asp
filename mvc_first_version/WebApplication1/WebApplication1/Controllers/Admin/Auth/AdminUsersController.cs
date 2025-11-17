@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Entities;
 using System.Threading.Tasks;
 using System.Linq;
+using System;
 
 namespace WebApplication1.Controllers.Admin.Auth;
 
@@ -21,6 +22,7 @@ public class AdminUsersController : Controller
         this.roleManager = roleManager;
     }
     
+    [HttpGet("", Name = "AdminUsers_Index")]
     public async Task<ActionResult> Index(int page = 1, int pageSize = 10, 
         string? search = null, string? role = null)
     {
@@ -67,5 +69,61 @@ public class AdminUsersController : Controller
         ViewBag.AllRoles = roleManager.Roles.Select(r => r.Name!).OrderBy(n => n).ToList();
         ViewBag.UserRoles = rolesByUser;
         return View("~/Views/Admin/AdminUsers/Index.cshtml", users);
+    }
+
+    [HttpPost("lock")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Lock(string id, int page = 1, int pageSize = 10, string? search = null, string? role = null)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            TempData["StatusMessage"] = "Не указан пользователь";
+            return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+        }
+
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            TempData["StatusMessage"] = "Пользователь не найден";
+            return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+        }
+
+        // Включаем возможность блокировки и ставим большую дату блокировки
+        await userManager.SetLockoutEnabledAsync(user, true);
+        var result = await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+
+        TempData["StatusMessage"] = result.Succeeded
+            ? $"Пользователь {user.Email ?? user.UserName} заблокирован."
+            : "Не удалось заблокировать пользователя.";
+
+        return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+    }
+
+    [HttpPost("unlock")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Unlock(string id, int page = 1, int pageSize = 10, string? search = null, string? role = null)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            TempData["StatusMessage"] = "Не указан пользователь";
+            return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+        }
+
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            TempData["StatusMessage"] = "Пользователь не найден";
+            return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+        }
+
+        var r1 = await userManager.SetLockoutEndDateAsync(user, null);
+        var r2 = await userManager.ResetAccessFailedCountAsync(user);
+        var succeeded = r1.Succeeded && r2.Succeeded;
+
+        TempData["StatusMessage"] = succeeded
+            ? $"Пользователь {user.Email ?? user.UserName} разблокирован."
+            : "Не удалось разблокировать пользователя.";
+
+        return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
     }
 }

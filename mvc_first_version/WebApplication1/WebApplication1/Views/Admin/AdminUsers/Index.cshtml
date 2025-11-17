@@ -46,6 +46,14 @@
         </form>
     </h5>
 
+    @if (TempData["StatusMessage"] is string msg && !string.IsNullOrWhiteSpace(msg))
+    {
+        <div class="alert alert-info alert-dismissible fade show mx-3 mt-3" role="alert">
+            @msg
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
 
 
     <div class="table-responsive text-nowrap">
@@ -78,9 +86,46 @@
                             {
                                 <div class="text-muted small mt-1">Нет ролей</div>
                             }
+                            var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow;
+                            if (isLocked)
+                            {
+                                <div class="text-danger small mt-1">Заблокирован до @user.LockoutEnd.Value.LocalDateTime</div>
+                            }
                         }
                     </td>
-                    
+                    <td class="text-nowrap">
+                        @{
+                            var isLockedNow = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow;
+                        }
+                        @if (!isLockedNow)
+                        {
+                            <form asp-controller="AdminUsers" asp-action="Lock" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <input type="hidden" name="page" value="@(page)" />
+                                <input type="hidden" name="pageSize" value="@(pageSize)" />
+                                <input type="hidden" name="search" value="@(search)" />
+                                <input type="hidden" name="role" value="@(role)" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Заблокировать пользователя">
+                                    Заблокировать
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form  asp-controller="AdminUsers"  asp-action="Unlock" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <input type="hidden" name="page" value="@(page)" />
+                                <input type="hidden" name="pageSize" value="@(pageSize)" />
+                                <input type="hidden" name="search" value="@(search)" />
+                                <input type="hidden" name="role" value="@(role)" />
+                                <button type="submit" class="btn btn-sm btn-success" title="Разблокировать пользователя">
+                                    Разблокировать
+                                </button>
+                            </form>
+                        }
+                    </td>
                 </tr>
             }
 
