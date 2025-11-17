@@ -17,9 +17,21 @@ public class AdminUsersController : Controller
         this.userManager = userManager;
     }
     
-    public ActionResult Index()
+    public ActionResult Index(int page = 1, int pageSize = 10)
     {
-        var users = userManager.Users;
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+
+        var query = userManager.Users.OrderBy(u => u.Email);
+        var totalItems = query.Count();
+        var users = query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        ViewData["Page"] = page;
+        ViewData["PageSize"] = pageSize;
+        ViewData["TotalItems"] = totalItems;
         return View("~/Views/Admin/AdminUsers/Index.cshtml", users);
     }
 }

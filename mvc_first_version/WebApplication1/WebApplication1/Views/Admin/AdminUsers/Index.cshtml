@@ -2,6 +2,13 @@
 @{
     Layout = "SneatAdminBoard/_ContentNavbarLayout";
     ViewData["Title"] = "Admin Dashboard";
+
+    var page = Convert.ToInt32(ViewData["Page"] ?? 1);
+    var pageSize = Convert.ToInt32(ViewData["PageSize"] ?? 10);
+    var totalItems = Convert.ToInt32(ViewData["TotalItems"] ?? 0);
+    var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)Math.Max(1, pageSize)));
+    if (page < 1) { page = 1; }
+    if (page > totalPages) { page = totalPages; }
 }
 
 
@@ -32,9 +39,67 @@
             </tbody>
 
             <tfoot>
-            <tr><td>
-                Total Users: @Model.Count()
-            </td></tr>
+            <tr>
+                <td colspan="2">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            Всего пользователей: <strong>@totalItems</strong>
+                        </div>
+
+                        <form method="get" class="d-flex align-items-center gap-2">
+                            <input type="hidden" name="page" value="@(page)" />
+                            <label for="pageSize" class="me-2">На странице:</label>
+                            <select id="pageSize" name="pageSize" class="form-select form-select-sm" 
+                                    style="width: auto" onchange="this.form.submit()">
+                                @{ var sizes = new int[] { 5, 10, 20, 50 }; }
+                                @foreach (var sz in sizes)
+                                {
+                                    if (sz == pageSize)
+                                    {
+                                        <option value="@sz" selected>@sz</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@sz">@sz</option>
+                                    }
+                                }
+                            </select>
+                        </form>
+
+                        <nav aria-label="Пагинация пользователей">
+                            <ul class="pagination mb-0">
+                                <li class="page-item @(page <= 1 ? "disabled" : "")">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@Math.Max(1, page - 1)" asp-route-pageSize="@pageSize" aria-label="Предыдущая">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+
+                                @{
+                                    // Показываем до 5 страниц вокруг текущей
+                                    var start = Math.Max(1, page - 2);
+                                    var end = Math.Min(totalPages, start + 4);
+                                    // Сдвиг если близко к концу
+                                    start = Math.Max(1, Math.Min(start, end - 4));
+                                }
+
+                                @for (int p = start; p <= end; p++)
+                                {
+                                    <li class="page-item @(p == page ? "active" : "")">
+                                        <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@pageSize">@p</a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(page >= totalPages ? "disabled" : "")">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@Math.Min(totalPages, page + 1)" asp-route-pageSize="@pageSize" aria-label="Следующая">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </td>
+            </tr>
             </tfoot>
         </table>
 
