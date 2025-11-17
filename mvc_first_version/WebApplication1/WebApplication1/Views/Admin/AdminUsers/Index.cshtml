@@ -1,5 +1,5 @@
 @model IEnumerable<MyIdentityUserEntity>
-@{
+@{ 
     Layout = "SneatAdminBoard/_ContentNavbarLayout";
     ViewData["Title"] = "Admin Dashboard";
 
@@ -9,11 +9,24 @@
     var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)Math.Max(1, pageSize)));
     if (page < 1) { page = 1; }
     if (page > totalPages) { page = totalPages; }
+    var search = (ViewData["Search"] as string) ?? string.Empty;
 }
 
 
 <div class="card">
-    <h5 class="card-header"> Admin Board : Users </h5>
+    <h5 class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span>Admin Board : Users</span>
+        <form method="get" class="d-flex align-items-center gap-2" role="search">
+            <input type="hidden" name="pageSize" value="@(pageSize)" />
+            <input class="form-control" style="width: 260px" type="search" placeholder="Поиск по email" aria-label="Поиск"
+                   name="search" value="@search" />
+            <button class="btn btn-primary" type="submit">Найти</button>
+            @if (!string.IsNullOrWhiteSpace(search))
+            {
+                <a class="btn btn-outline-secondary" asp-action="Index">Сбросить</a>
+            }
+        </form>
+    </h5>
 
 
 
@@ -48,6 +61,7 @@
 
                         <form method="get" class="d-flex align-items-center gap-2">
                             <input type="hidden" name="page" value="@(page)" />
+                            <input type="hidden" name="search" value="@search" />
                             <label for="pageSize" class="me-2">На странице:</label>
                             <select id="pageSize" name="pageSize" class="form-select form-select-sm" 
                                     style="width: auto" onchange="this.form.submit()">
@@ -70,7 +84,7 @@
                             <ul class="pagination mb-0">
                                 <li class="page-item @(page <= 1 ? "disabled" : "")">
                                     <a class="page-link" asp-action="Index" 
-                                       asp-route-page="@Math.Max(1, page - 1)" asp-route-pageSize="@pageSize" aria-label="Предыдущая">
+                                       asp-route-page="@Math.Max(1, page - 1)" asp-route-pageSize="@pageSize" asp-route-search="@search" aria-label="Предыдущая">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
@@ -86,12 +100,12 @@
                                 @for (int p = start; p <= end; p++)
                                 {
                                     <li class="page-item @(p == page ? "active" : "")">
-                                        <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@pageSize">@p</a>
+                                        <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@pageSize" asp-route-search="@search">@p</a>
                                     </li>
                                 }
 
                                 <li class="page-item @(page >= totalPages ? "disabled" : "")">
-                                    <a class="page-link" asp-action="Index" asp-route-page="@Math.Min(totalPages, page + 1)" asp-route-pageSize="@pageSize" aria-label="Следующая">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@Math.Min(totalPages, page + 1)" asp-route-pageSize="@pageSize" asp-route-search="@search" aria-label="Следующая">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>

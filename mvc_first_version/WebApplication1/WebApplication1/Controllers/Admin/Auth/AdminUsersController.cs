@@ -17,12 +17,21 @@ public class AdminUsersController : Controller
         this.userManager = userManager;
     }
     
-    public ActionResult Index(int page = 1, int pageSize = 10)
+    public ActionResult Index(int page = 1, int pageSize = 10, string? search = null)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 1;
 
-        var query = userManager.Users.OrderBy(u => u.Email);
+        var query = userManager.Users.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(u => u.Email!.Contains(term));
+        }
+
+        query = query.OrderBy(u => u.Email);
+
         var totalItems = query.Count();
         var users = query
             .Skip((page - 1) * pageSize)
@@ -32,6 +41,7 @@ public class AdminUsersController : Controller
         ViewData["Page"] = page;
         ViewData["PageSize"] = pageSize;
         ViewData["TotalItems"] = totalItems;
+        ViewData["Search"] = search ?? string.Empty;
         return View("~/Views/Admin/AdminUsers/Index.cshtml", users);
     }
 }
