@@ -1,8 +1,41 @@
-
+@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityRole>
 @{
+    
     Layout = "SneatAdminBoard/_ContentNavbarLayout";
     ViewData["Title"] = "Admin Dashboard";
 }
 
 <h1> Admin Board : Roles </h1>
 
+<div class="card">
+<h5 class="card-header">Table Basic</h5>
+
+
+
+<div class="table-responsive text-nowrap">
+    <table class="table">
+        <thead>
+        <tr>
+            <th> Role Name</th>
+            <th> Action </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+        @foreach (var role in Model)
+        {
+            <tr>
+                <td>@role.Name</td>
+                <td> <a class="btn btn-danger" asp-action="Delete" asp-route-id="@role.Id">Delete</a></td>
+            </tr>
+        }
+
+
+        </tbody>
+
+        <tfoot></tfoot>
+    </table>
+
+</div>
+</div>
