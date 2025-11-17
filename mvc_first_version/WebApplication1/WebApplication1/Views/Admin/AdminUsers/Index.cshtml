@@ -10,6 +10,7 @@
     if (page < 1) { page = 1; }
     if (page > totalPages) { page = totalPages; }
     var search = (ViewData["Search"] as string) ?? string.Empty;
+    var rolesByUser = ViewBag.UserRoles as IDictionary<string, IList<string>> ?? new Dictionary<string, IList<string>>();
 }
 
 
@@ -44,7 +45,25 @@
             @foreach (var user in Model)
             {
                 <tr>
-                    <td>@user.Email</td>
+                    <td>@user.Email<br/>
+                        @user.UserName<br/>
+                        @{
+                            if (rolesByUser.TryGetValue(user.Id, out var roles) && roles.Any())
+                            {
+                                <div class="mt-1">
+                                    @foreach (var r in roles)
+                                    {
+                                        <span class="badge bg-secondary me-1">@r</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-muted small mt-1">Нет ролей</div>
+                            }
+                        }
+                    </td>
+                    
                 </tr>
             }
 
