@@ -71,6 +71,86 @@ public class AdminUsersController : Controller
         return View("~/Views/Admin/AdminUsers/Index.cshtml", users);
     }
 
+    [HttpGet("edit/{id}", Name = "AdminUsers_Edit")]
+    public async Task<IActionResult> Edit(string id, int page = 1, int pageSize = 10, string? search = null, string? role = null)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            TempData["StatusMessage"] = "Не указан пользователь";
+            return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+        }
+
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            TempData["StatusMessage"] = "Пользователь не найден";
+            return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+        }
+
+        var allRoles = roleManager.Roles.Select(r => r.Name!).OrderBy(n => n).ToList();
+        var userRoles = await userManager.GetRolesAsync(user);
+
+        ViewBag.AllRoles = allRoles;
+        ViewBag.UserRoles = userRoles; // список ролей конкретного пользователя
+
+        ViewData["Page"] = page;
+        ViewData["PageSize"] = pageSize;
+        ViewData["Search"] = search ?? string.Empty;
+        ViewData["Role"] = role ?? string.Empty;
+
+        return View("~/Views/Admin/AdminUsers/Edit.cshtml", user);
+    }
+
+    [HttpPost("edit/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditSave(string id, string? selectedRole, int page = 1, int pageSize = 10, string? search = null, string? role = null)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            TempData["StatusMessage"] = "Не указан пользователь";
+            return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+        }
+
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            TempData["StatusMessage"] = "Пользователь не найден";
+            return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+        }
+
+        // Удаляем все текущие роли
+        var currentRoles = await userManager.GetRolesAsync(user);
+        if (currentRoles.Any())
+        {
+            var removeRes = await userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeRes.Succeeded)
+            {
+                TempData["StatusMessage"] = "Не удалось снять текущие роли пользователя.";
+                return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+            }
+        }
+
+        // Назначаем выбранную роль, если она указана
+        if (!string.IsNullOrWhiteSpace(selectedRole))
+        {
+            if (!await roleManager.RoleExistsAsync(selectedRole))
+            {
+                TempData["StatusMessage"] = $"Роль '{selectedRole}' не существует.";
+                return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+            }
+
+            var addRes = await userManager.AddToRoleAsync(user, selectedRole);
+            if (!addRes.Succeeded)
+            {
+                TempData["StatusMessage"] = "Не удалось назначить роль пользователю.";
+                return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+            }
+        }
+
+        TempData["StatusMessage"] = "Изменения сохранены.";
+        return RedirectToRoute("AdminUsers_Index", new { page, pageSize, search, role });
+    }
+
     [HttpPost("lock")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Lock(string id, int page = 1, int pageSize = 10, string? search = null, string? role = null)

@@ -1,0 +1,84 @@
+@model MyIdentityUserEntity
+@{
+    Layout = "SneatAdminBoard/_ContentNavbarLayout";
+    ViewData["Title"] = "Редактирование пользователя";
+
+    var page = Convert.ToInt32(ViewData["Page"] ?? 1);
+    var pageSize = Convert.ToInt32(ViewData["PageSize"] ?? 10);
+    var search = (ViewData["Search"] as string) ?? string.Empty;
+    var role = (ViewData["Role"] as string) ?? string.Empty;
+
+    var allRoles = ViewBag.AllRoles as IEnumerable<string> ?? Enumerable.Empty<string>();
+    var userRoles = ViewBag.UserRoles as IList<string> ?? new List<string>();
+    var currentRole = userRoles.FirstOrDefault() ?? string.Empty;
+}
+
+<div class="card">
+    <h5 class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span>Редактирование пользователя</span>
+        <a class="btn btn-outline-secondary"
+           asp-route="AdminUsers_Index"
+            asp-route-pageSize="@pageSize" asp-route-search="@search" asp-route-role="@role">
+            Назад к списку
+        </a>
+    </h5>
+
+    <div class="card-body">
+        <div class="mb-3">
+            <div><strong>Email:</strong> @Model.Email</div>
+            <div><strong>UserName:</strong> @Model.UserName</div>
+            <div class="mt-2">
+                <strong>Текущие роли:</strong>
+                @if (userRoles.Any())
+                {
+                    foreach (var r in userRoles)
+                    {
+                        <span class="badge bg-secondary me-1">@r</span>
+                    }
+                }
+                else
+                {
+                    <span class="text-muted">Нет ролей</span>
+                }
+            </div>
+        </div>
+
+        <form asp-controller="AdminUsers" asp-action="EditSave" asp-route-id="@Model.Id" method="post" class="row gy-3">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="page" value="@(page)" />
+            <input type="hidden" name="pageSize" value="@(pageSize)" />
+            <input type="hidden" name="search" value="@(search)" />
+            <input type="hidden" name="role" value="@(role)" />
+
+            <div class="col-12 col-md-6">
+                <label for="selectedRole" class="form-label">Роль</label>
+                <select id="selectedRole" name="selectedRole" class="form-select">
+                    <option value="">Без роли</option>
+                    @foreach (var r in allRoles)
+                    {
+                        if (string.Equals(r, currentRole, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <option value="@r" selected>@r</option>
+                        }
+                        else
+                        {
+                            <option value="@r">@r</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a class="btn btn-outline-secondary ms-2"
+                   asp-route="AdminUsers_Index"  asp-route-pageSize="@pageSize" asp-route-search="@search" asp-route-role="@role">
+                    Отменить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+

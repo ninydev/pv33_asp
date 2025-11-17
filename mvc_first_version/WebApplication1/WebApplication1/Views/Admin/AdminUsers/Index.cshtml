@@ -97,6 +97,10 @@
                         @{
                             var isLockedNow = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow;
                         }
+                        @{
+                            var editUrl = Url.RouteUrl("AdminUsers_Edit", new { id = user.Id, page = page, pageSize = pageSize, search = search, role = role });
+                        }
+                        <a class="btn btn-sm btn-outline-primary me-1" href="@editUrl">Редактировать</a>
                         @if (!isLockedNow)
                         {
                             <form asp-controller="AdminUsers" asp-action="Lock" method="post" class="d-inline">
