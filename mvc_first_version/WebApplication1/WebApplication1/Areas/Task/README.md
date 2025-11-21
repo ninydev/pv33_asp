@@ -11,6 +11,7 @@ Area: Task
 - Repositories — слой доступа к данным (интерфейсы и реализации).
 - Mappers — профили/мапперы между Entities и DTO.
 - Exceptions — прикладные исключения домена и сервиса.
+- Views — Razor-представления для контроллеров области (`Areas/Task/Views/<Controller>/<Action>.cshtml`). Здесь также располагаются `_ViewImports.cshtml` и `_ViewStart.cshtml`.
 
 Рекомендации по именованию
 - Файлы и классы начинайте с префикса `Task` (например, `TaskService`, `TaskCreateDto`).
