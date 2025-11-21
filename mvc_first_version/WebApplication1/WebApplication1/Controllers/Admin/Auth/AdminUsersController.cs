@@ -5,6 +5,7 @@ using WebApplication1.Entities;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace WebApplication1.Controllers.Admin.Auth;
 
@@ -22,10 +23,23 @@ public class AdminUsersController : Controller
         this.roleManager = roleManager;
     }
     
+    /// <summary>
+    /// Список пользователей. Обратите внимание: стандартный логгер получаем 
+    /// НЕ через конструктор контроллера, а только для этого метода — через параметр
+    /// <c>[FromServices] ILogger&lt;AdminUsersController&gt; logger</c>.
+    /// Такой подход:
+    /// - Изолирует зависимость логгера только там, где она реально нужна (меньше «шумных» полей класса).
+    /// - Упрощает тестирование отдельных экшенов (можно передать заглушку логгера только в этот метод).
+    /// - Чуть менее производителен микроскопически из‑за получения зависимости на каждый вызов экшена,
+    ///   но в ASP.NET Core это обычно пренебрежимо.
+    /// В отличие от инъекции через конструктор контроллера, где сервис доступен во всех методах как поле класса,
+    /// методная инъекция делает зависимость локальной и явно видимой в сигнатуре конкретного экшена.
+    /// </summary>
     [HttpGet("", Name = "AdminUsers_Index")]
-    public async Task<ActionResult> Index(int page = 1, int pageSize = 10, 
+    public async Task<ActionResult> Index([FromServices] ILogger<AdminUsersController> logger, int page = 1, int pageSize = 10, 
         string? search = null, string? role = null)
     {
+        logger.LogInformation("AdminUsers.Index called: page={Page}, pageSize={PageSize}, search={Search}, role={Role}", page, pageSize, search, role);
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 1;
 
@@ -68,6 +82,7 @@ public class AdminUsersController : Controller
         ViewData["Role"] = role ?? string.Empty;
         ViewBag.AllRoles = roleManager.Roles.Select(r => r.Name!).OrderBy(n => n).ToList();
         ViewBag.UserRoles = rolesByUser;
+        logger.LogInformation("AdminUsers.Index prepared response: usersOnPage={UsersOnPage}, totalItems={TotalItems}", users.Count, totalItems);
         return View("~/Views/Admin/AdminUsers/Index.cshtml", users);
     }
 
