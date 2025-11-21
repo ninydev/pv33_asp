@@ -51,9 +51,15 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+// Маршрутизация для Areas (например, Area "Task")
 app.MapControllerRoute(
-    "default",
-    "{controller=Home}/{action=Index}/{id?}");
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+// Основной маршрут по умолчанию
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
 // Add a test route
