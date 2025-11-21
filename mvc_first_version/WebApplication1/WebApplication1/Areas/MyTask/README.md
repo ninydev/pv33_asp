@@ -1,4 +1,4 @@
-Area: Task
+Area: MyTask
 
 Назначение
 - Область (Area) для функционала, связанного с сущностью `TaskEntity` (управление задачами: создание, чтение, обновление, удаление, фильтрация, статусы и т. п.).
@@ -6,16 +6,16 @@ Area: Task
 Структура папок
 - DTO — модели передачи данных (вход/выход API и форм).
 - Entities — доменные сущности (например, `TaskEntity`).
-- Controllers — контроллеры MVC/Web API внутри области. Используйте атрибут `[Area("Task")]`.
+- Controllers — контроллеры MVC/Web API внутри области. Используйте атрибут `[Area("MyTask")]`.
 - Services — слой прикладной логики и сценариев использования.
 - Repositories — слой доступа к данным (интерфейсы и реализации).
 - Mappers — профили/мапперы между Entities и DTO.
 - Exceptions — прикладные исключения домена и сервиса.
-- Views — Razor-представления для контроллеров области (`Areas/Task/Views/<Controller>/<Action>.cshtml`). Здесь также располагаются `_ViewImports.cshtml` и `_ViewStart.cshtml`.
+- Views — Razor‑представления для контроллеров области (`Areas/MyTask/Views/<Controller>/<Action>.cshtml`). Здесь также располагаются `_ViewImports.cshtml` и `_ViewStart.cshtml`.
 
 Рекомендации по именованию
 - Файлы и классы начинайте с префикса `Task` (например, `TaskService`, `TaskCreateDto`).
-- Пространства имён: `WebApplication1.Areas.Task.<Layer>`.
+- Пространства имён: `WebApplication1.Areas.MyTask.<Layer>`.
 - Соблюдайте SOLID, разделение ответственности и правила чистой архитектуры.
 
-См. README.md в подпапках для деталей.
+Примечание: Область `Task` переименована в `MyTask`, чтобы исключить конфликт имён с типом `System.Threading.Tasks.Task`.
