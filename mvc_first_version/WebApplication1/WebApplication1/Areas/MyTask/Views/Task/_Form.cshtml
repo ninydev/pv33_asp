@@ -1,0 +1,25 @@
+@using WebApplication1.Areas.MyTask.Entities
+@model dynamic
+
+<div class="mb-3">
+    <label asp-for="Title" class="form-label"></label>
+    <input asp-for="Title" class="form-control" />
+    <span asp-validation-for="Title" class="text-danger"></span>
+    <small class="text-muted">Краткий заголовок задачи (до 200 символов).</small>
+    <hr />
+    <label asp-for="Description" class="form-label"></label>
+    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+    <hr />
+    <label asp-for="Priority" class="form-label"></label>
+    <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<TaskPriority>()"></select>
+    <span asp-validation-for="Priority" class="text-danger"></span>
+    <hr />
+    <label asp-for="DueDate" class="form-label"></label>
+    <input asp-for="DueDate" class="form-control" type="datetime-local" />
+    <span asp-validation-for="DueDate" class="text-danger"></span>
+    <hr />
+    <label asp-for="AssigneeId" class="form-label"></label>
+    <input asp-for="AssigneeId" class="form-control" />
+    <span asp-validation-for="AssigneeId" class="text-danger"></span>
+</div>

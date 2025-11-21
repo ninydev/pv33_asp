@@ -1,0 +1,46 @@
+@using WebApplication1.Areas.MyTask.DTO
+@model TaskDetailsDto
+
+@{
+    ViewData["Title"] = $"Задача #{Model.Id}";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Заголовок</dt>
+            <dd class="col-sm-9">@Model.Title</dd>
+
+            <dt class="col-sm-3">Статус</dt>
+            <dd class="col-sm-9">@Model.Status</dd>
+
+            <dt class="col-sm-3">Приоритет</dt>
+            <dd class="col-sm-9">@Model.Priority</dd>
+
+            <dt class="col-sm-3">Срок</dt>
+            <dd class="col-sm-9">@Model.DueDate?.ToString("u")</dd>
+
+            <dt class="col-sm-3">Создано</dt>
+            <dd class="col-sm-9">@Model.CreatedAt.ToString("u")</dd>
+
+            <dt class="col-sm-3">Обновлено</dt>
+            <dd class="col-sm-9">@Model.UpdatedAt?.ToString("u")</dd>
+
+            <dt class="col-sm-3">Исполнитель</dt>
+            <dd class="col-sm-9">@Model.AssigneeUserName (@Model.AssigneeEmail)</dd>
+
+            <dt class="col-sm-3">Описание</dt>
+            <dd class="col-sm-9"><pre class="mb-0">@Model.Description</pre></dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <a class="btn btn-primary" href="@Url.Action("Edit", new { area = "MyTask", id = Model.Id })">Изменить</a>
+        <form method="post" asp-action="Delete" asp-area="MyTask" asp-route-id="@Model.Id" class="d-inline" onsubmit="return confirm('Удалить задачу #@Model.Id?');">
+            <button class="btn btn-danger" type="submit">Удалить</button>
+        </form>
+        <a class="btn btn-secondary" href="@Url.Action("Index", new { area = "MyTask" })">К списку</a>
+    </div>
+    
+</div>

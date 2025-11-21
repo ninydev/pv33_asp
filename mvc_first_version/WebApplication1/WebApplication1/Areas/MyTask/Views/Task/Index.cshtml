@@ -1,0 +1,128 @@
+@using WebApplication1.Areas.MyTask.DTO
+@model PagedResultDto<TaskListItemDto>
+
+@{
+    ViewData["Title"] = "Задачи";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-3">
+            <input class="form-control" type="text" name="Search" value="@Context.Request.Query["Search"]" placeholder="Поиск по заголовку" />
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="Status">
+                <option value="">-- Статус --</option>
+                @foreach (var s in Enum.GetValues<WebApplication1.Areas.MyTask.Entities.TaskStatus>())
+                {
+                    var selected = Context.Request.Query["Status"] == s.ToString() ? "selected" : "";
+                    <option value="@s" @selected>@s</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="Priority">
+                <option value="">-- Приоритет --</option>
+                @foreach (var p in Enum.GetValues<WebApplication1.Areas.MyTask.Entities.TaskPriority>())
+                {
+                    var selected = Context.Request.Query["Priority"] == p.ToString() ? "selected" : "";
+                    <option value="@p" @selected>@p</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input class="form-control" type="text" name="AssigneeId" value="@Context.Request.Query["AssigneeId"]" placeholder="AssigneeId" />
+        </div>
+        <div class="col-md-2">
+            @{
+                var sb = Context.Request.Query["SortBy"].ToString();
+            }
+            <select class="form-select" name="SortBy">
+                <option value="CreatedAt" selected="@(sb=="CreatedAt")">Создано</option>
+                <option value="DueDate" selected="@(sb=="DueDate")">Срок</option>
+                <option value="Priority" selected="@(sb=="Priority")">Приоритет</option>
+                <option value="Status" selected="@(sb=="Status")">Статус</option>
+                <option value="Title" selected="@(sb=="Title")">Заголовок</option>
+            </select>
+        </div>
+        <div class="col-md-1 d-flex align-items-center">
+            @{
+                var desc = Context.Request.Query["Desc"].ToString();
+            }
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="Desc" value="true" checked="@(string.IsNullOrEmpty(desc) || desc == "true")" id="descCheck" />
+                <label class="form-check-label" for="descCheck">Desc</label>
+            </div>
+        </div>
+        <div class="col-md-12 mt-2">
+            <button class="btn btn-primary" type="submit">Фильтр</button>
+            <a class="btn btn-secondary" href="@Url.Action("Index", new { area = "MyTask" })">Сброс</a>
+            <a class="btn btn-success" href="@Url.Action("Create", new { area = "MyTask" })">Создать</a>
+        </div>
+    </div>
+    <input type="hidden" name="Page" value="@Model.Page" />
+    <input type="hidden" name="PageSize" value="@Model.PageSize" />
+    
+</form>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Заголовок</th>
+        <th>Статус</th>
+        <th>Приоритет</th>
+        <th>Срок</th>
+        <th>Назначен</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var t in Model.Items)
+    {
+        <tr>
+            <td>@t.Id</td>
+            <td>@t.Title</td>
+            <td>@t.Status</td>
+            <td>@t.Priority</td>
+            <td>@t.DueDate?.ToString("u")</td>
+            <td>@t.AssigneeUserName</td>
+            <td>
+                <a class="btn btn-sm btn-link" href="@Url.Action("Details", new { id = t.Id, area = "MyTask" })">Детали</a>
+                <a class="btn btn-sm btn-link" href="@Url.Action("Edit", new { id = t.Id, area = "MyTask" })">Изменить</a>
+                <form method="post" asp-action="Delete" asp-route-id="@t.Id" asp-area="MyTask" class="d-inline" onsubmit="return confirm('Удалить задачу #@t.Id?');">
+                    <button class="btn btn-sm btn-link text-danger" type="submit">Удалить</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+    </table>
+
+<nav aria-label="Пагинация">
+    <ul class="pagination">
+        <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+            <a class="page-link" href="@Url.Action("Index", new { area="MyTask", Page = Model.Page - 1, PageSize = Model.PageSize, Search = Context.Request.Query["Search"], Status = Context.Request.Query["Status"], Priority = Context.Request.Query["Priority"], AssigneeId = Context.Request.Query["AssigneeId"], SortBy = Context.Request.Query["SortBy"], Desc = Context.Request.Query["Desc"] })">Предыдущая</a>
+        </li>
+        <li class="page-item disabled"><span class="page-link">Стр. @Model.Page из @Model.TotalPages (@Model.TotalCount)</span></li>
+        <li class="page-item @(Model.HasNext ? "" : "disabled")">
+            <a class="page-link" href="@Url.Action("Index", new { area="MyTask", Page = Model.Page + 1, PageSize = Model.PageSize, Search = Context.Request.Query["Search"], Status = Context.Request.Query["Status"], Priority = Context.Request.Query["Priority"], AssigneeId = Context.Request.Query["AssigneeId"], SortBy = Context.Request.Query["SortBy"], Desc = Context.Request.Query["Desc"] })">Следующая</a>
+        </li>
+    </ul>
+    <div>
+        <form method="get" class="d-inline">
+            <input type="hidden" name="Page" value="1" />
+            @{
+                var ps = Context.Request.Query["PageSize"].ToString();
+            }
+            <select class="form-select d-inline w-auto" name="PageSize" onchange="this.form.submit()">
+                <option value="10" selected="@(string.IsNullOrEmpty(ps) || ps=="10")">10</option>
+                <option value="20" selected="@(ps=="20")">20</option>
+                <option value="50" selected="@(ps=="50")">50</option>
+                <option value="100" selected="@(ps=="100")">100</option>
+            </select>
+        </form>
+    </div>
+</nav>

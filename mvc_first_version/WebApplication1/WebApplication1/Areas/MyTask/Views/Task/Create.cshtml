@@ -1,0 +1,17 @@
+@using WebApplication1.Areas.MyTask.DTO
+@model TaskCreateRequestDto
+
+@{
+    ViewData["Title"] = "Создать задачу";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create" asp-area="MyTask" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    @await Html.PartialAsync("_Form", Model)
+    <button type="submit" class="btn btn-primary">Создать</button>
+    <a class="btn btn-secondary" href="@Url.Action("Index", new { area = "MyTask" })">Отмена</a>
+</form>
+
+<partial name="_ValidationScriptsPartial" />
