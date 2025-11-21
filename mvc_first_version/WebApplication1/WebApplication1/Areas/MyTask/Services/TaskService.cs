@@ -1,0 +1,226 @@
+using Microsoft.EntityFrameworkCore;
+using WebApplication1.Areas.MyTask.DTO;
+using WebApplication1.Areas.MyTask.Entities;
+using WebApplication1.Areas.MyTask.Repositories;
+using TaskStatus = WebApplication1.Areas.MyTask.Entities.TaskStatus;
+
+#if AUTO_MAPPER
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+#endif
+
+namespace WebApplication1.Areas.MyTask.Services;
+
+/// <summary>
+/// Реализация прикладного сервиса для работы с задачами.
+/// Инкапсулирует доступ к данным через репозиторий и выполняет маппинг между Entity и DTO.
+/// </summary>
+public class TaskService : ITaskService
+{
+    private readonly ITaskRepository _repo;
+#if AUTO_MAPPER
+    private readonly IMapper _mapper;
+#endif
+
+    public TaskService(
+        ITaskRepository repo
+#if AUTO_MAPPER
+        , IMapper mapper
+#endif
+    )
+    {
+        _repo = repo;
+#if AUTO_MAPPER
+        _mapper = mapper;
+#endif
+    }
+
+    /// <inheritdoc />
+    public async Task<PagedResultDto<TaskListItemDto>> GetPageAsync(TaskFilterQueryDto q, CancellationToken ct = default)
+    {
+        var query = _repo.Query(asNoTracking: true);
+
+        // Фильтры
+        if (!string.IsNullOrWhiteSpace(q.Search))
+            query = query.Where(t => t.Title.Contains(q.Search));
+        if (q.Status.HasValue)
+            query = query.Where(t => t.Status == q.Status);
+        if (q.Priority.HasValue)
+            query = query.Where(t => t.Priority == q.Priority);
+        if (!string.IsNullOrEmpty(q.AssigneeId))
+            query = query.Where(t => t.AssigneeId == q.AssigneeId);
+        if (q.DueFrom.HasValue)
+            query = query.Where(t => t.DueDate >= q.DueFrom);
+        if (q.DueTo.HasValue)
+            query = query.Where(t => t.DueDate <= q.DueTo);
+
+        // Сортировка
+        query = (q.SortBy, q.Desc) switch
+        {
+            ("DueDate", true) => query.OrderByDescending(t => t.DueDate),
+            ("DueDate", false) => query.OrderBy(t => t.DueDate),
+            ("Priority", true) => query.OrderByDescending(t => t.Priority),
+            ("Priority", false) => query.OrderBy(t => t.Priority),
+            ("Status", true) => query.OrderByDescending(t => t.Status),
+            ("Status", false) => query.OrderBy(t => t.Status),
+            ("Title", true) => query.OrderByDescending(t => t.Title),
+            ("Title", false) => query.OrderBy(t => t.Title),
+            _ => query.OrderByDescending(t => t.CreatedAt)
+        };
+
+        var total = await query.CountAsync(ct);
+
+#if AUTO_MAPPER
+        var items = await query
+            .ProjectTo<TaskListItemDto>(_mapper.ConfigurationProvider)
+            .Skip((q.Page - 1) * q.PageSize)
+            .Take(q.PageSize)
+            .ToListAsync(ct);
+#else
+        var items = await query
+            .Select(t => new TaskListItemDto
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Status = t.Status,
+                Priority = t.Priority,
+                DueDate = t.DueDate,
+                AssigneeId = t.AssigneeId,
+                AssigneeUserName = t.Assignee != null ? t.Assignee.UserName : null
+            })
+            .Skip((q.Page - 1) * q.PageSize)
+            .Take(q.PageSize)
+            .ToListAsync(ct);
+#endif
+
+        return new PagedResultDto<TaskListItemDto>
+        {
+            Items = items,
+            TotalCount = total,
+            Page = q.Page,
+            PageSize = q.PageSize
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<TaskDetailsDto?> GetByIdAsync(int id, CancellationToken ct = default)
+    {
+        var entity = await _repo.GetByIdAsync(id, includeAssignee: true, ct);
+        if (entity == null) return null;
+
+#if AUTO_MAPPER
+        return _mapper.Map<TaskDetailsDto>(entity);
+#else
+        return MapToDetailsDto(entity);
+#endif
+    }
+
+    /// <inheritdoc />
+    public async Task<TaskCreatedResponseDto> CreateAsync(TaskCreateRequestDto dto, Func<int, string?>? buildLocation = null, CancellationToken ct = default)
+    {
+#if AUTO_MAPPER
+        var entity = _mapper.Map<TaskEntity>(dto);
+#else
+        var entity = MapFromCreateDto(dto);
+#endif
+        var created = await _repo.AddAsync(entity, ct);
+
+        return new TaskCreatedResponseDto
+        {
+            Id = created.Id,
+            Location = buildLocation?.Invoke(created.Id)
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> UpdateAsync(int id, TaskUpdateRequestDto dto, CancellationToken ct = default)
+    {
+        // Проверяем существование, чтобы корректно вернуть false при NotFound
+        if (!await _repo.ExistsAsync(id, ct))
+            return false;
+
+#if AUTO_MAPPER
+        var entity = _mapper.Map<TaskEntity>(dto);
+#else
+        var entity = new TaskEntity();
+        ApplyUpdateDto(entity, dto);
+#endif
+        entity.Id = id;
+
+        await _repo.UpdateAsync(entity, ct);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> PatchAsync(int id, TaskPatchRequestDto dto, CancellationToken ct = default)
+    {
+        var entity = await _repo.GetByIdAsync(id, includeAssignee: false, ct);
+        if (entity == null) return false;
+
+#if AUTO_MAPPER
+        // Для PATCH профиль настроен маппить только непустые поля
+        _mapper.Map(dto, entity);
+#else
+        ApplyPatchDto(entity, dto);
+#endif
+
+        await _repo.UpdateAsync(entity, ct);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(int id, CancellationToken ct = default)
+        => _repo.DeleteAsync(id, ct);
+
+#region Manual mapping helpers (используются, если не подключён AutoMapper)
+#if !AUTO_MAPPER
+    private static TaskDetailsDto MapToDetailsDto(TaskEntity e)
+        => new TaskDetailsDto
+        {
+            Id = e.Id,
+            Title = e.Title,
+            Description = e.Description,
+            Status = e.Status,
+            Priority = e.Priority,
+            DueDate = e.DueDate,
+            CreatedAt = e.CreatedAt,
+            UpdatedAt = e.UpdatedAt,
+            AssigneeId = e.AssigneeId,
+            AssigneeUserName = e.Assignee?.UserName,
+            AssigneeEmail = e.Assignee?.Email
+        };
+
+    private static TaskEntity MapFromCreateDto(TaskCreateRequestDto d)
+        => new TaskEntity
+        {
+            Title = d.Title,
+            Description = d.Description,
+            Priority = d.Priority,
+            // Статус по умолчанию — New
+            Status = TaskStatus.New,
+            DueDate = d.DueDate,
+            AssigneeId = d.AssigneeId
+        };
+
+    private static void ApplyUpdateDto(TaskEntity e, TaskUpdateRequestDto d)
+    {
+        e.Title = d.Title;
+        e.Description = d.Description;
+        e.Status = d.Status;
+        e.Priority = d.Priority;
+        e.DueDate = d.DueDate;
+        e.AssigneeId = d.AssigneeId;
+    }
+
+    private static void ApplyPatchDto(TaskEntity e, TaskPatchRequestDto d)
+    {
+        if (d.Title != null) e.Title = d.Title;
+        if (d.Description != null) e.Description = d.Description;
+        if (d.Status.HasValue) e.Status = d.Status.Value;
+        if (d.Priority.HasValue) e.Priority = d.Priority.Value;
+        if (d.DueDate.HasValue) e.DueDate = d.DueDate;
+        if (d.AssigneeId != null) e.AssigneeId = d.AssigneeId;
+    }
+#endif
+#endregion
+}
