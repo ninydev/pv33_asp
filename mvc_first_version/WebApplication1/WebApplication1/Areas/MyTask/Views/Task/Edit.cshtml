@@ -12,7 +12,8 @@
     <input type="hidden" name="id" value="@ViewBag.TaskId" />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="mb-3">
+    <div class="mb-3">0>Index.cshtml(21,40): Error RZ1031 : The tag helper 'option' must not have C# in the element's attribute declaration area.
+
         <label asp-for="Status" class="form-label"></label>
         <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<WebApplication1.Areas.MyTask.Entities.TaskStatus>()"></select>
         <span asp-validation-for="Status" class="text-danger"></span>

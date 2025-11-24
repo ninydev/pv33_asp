@@ -54,43 +54,108 @@ public class TaskService : ITaskService
         if (q.DueTo.HasValue)
             query = query.Where(t => t.DueDate <= q.DueTo);
 
-        // Сортировка
-        query = (q.SortBy, q.Desc) switch
-        {
-            ("DueDate", true) => query.OrderByDescending(t => t.DueDate),
-            ("DueDate", false) => query.OrderBy(t => t.DueDate),
-            ("Priority", true) => query.OrderByDescending(t => t.Priority),
-            ("Priority", false) => query.OrderBy(t => t.Priority),
-            ("Status", true) => query.OrderByDescending(t => t.Status),
-            ("Status", false) => query.OrderBy(t => t.Status),
-            ("Title", true) => query.OrderByDescending(t => t.Title),
-            ("Title", false) => query.OrderBy(t => t.Title),
-            _ => query.OrderByDescending(t => t.CreatedAt)
-        };
+        // ВАЖНО: SQLite не поддерживает ORDER BY по DateTimeOffset. Поэтому:
+        // 1) сначала считаем total БЕЗ сортировки;
+        // 2) сортировку по полям-девтаймам (DueDate/CreatedAt) выполняем на клиенте.
 
         var total = await query.CountAsync(ct);
 
-#if AUTO_MAPPER
-        var items = await query
-            .ProjectTo<TaskListItemDto>(_mapper.ConfigurationProvider)
-            .Skip((q.Page - 1) * q.PageSize)
-            .Take(q.PageSize)
-            .ToListAsync(ct);
-#else
-        var items = await query
-            .Select(t => new TaskListItemDto
+        // Сортировка на стороне БД для безопасных типов (не DateTimeOffset)
+        var orderAppliedOnServer = false;
+        if (!string.IsNullOrWhiteSpace(q.SortBy))
+        {
+            switch (q.SortBy)
             {
-                Id = t.Id,
-                Title = t.Title,
-                Status = t.Status,
-                Priority = t.Priority,
-                DueDate = t.DueDate,
-                AssigneeId = t.AssigneeId,
-                AssigneeUserName = t.Assignee != null ? t.Assignee.UserName : null
-            })
-            .Skip((q.Page - 1) * q.PageSize)
-            .Take(q.PageSize)
-            .ToListAsync(ct);
+                // DueDate потенциально DateTimeOffset — сортируем на клиенте (см. ниже)
+                case "Priority":
+                    query = q.Desc ? query.OrderByDescending(t => t.Priority) : query.OrderBy(t => t.Priority);
+                    orderAppliedOnServer = true;
+                    break;
+                case "Status":
+                    query = q.Desc ? query.OrderByDescending(t => t.Status) : query.OrderBy(t => t.Status);
+                    orderAppliedOnServer = true;
+                    break;
+                case "Title":
+                    query = q.Desc ? query.OrderByDescending(t => t.Title) : query.OrderBy(t => t.Title);
+                    orderAppliedOnServer = true;
+                    break;
+            }
+        }
+        // Значение по умолчанию — безопасная сортировка по Id (вместо CreatedAt)
+        if (!orderAppliedOnServer && (string.IsNullOrWhiteSpace(q.SortBy) || q.SortBy is not ("Priority" or "Status" or "Title")))
+        {
+            query = query.OrderByDescending(t => t.Id);
+            orderAppliedOnServer = true;
+        }
+
+        // Если запрос просит сортировку по DueDate — делаем сортировку и пагинацию на клиенте,
+        // чтобы избежать ошибки SQLite "ORDER BY DateTimeOffset not supported".
+        var sortByDueDate = string.Equals(q.SortBy, "DueDate", StringComparison.OrdinalIgnoreCase);
+
+#if AUTO_MAPPER
+        List<TaskListItemDto> items;
+        if (sortByDueDate)
+        {
+            items = await query
+                .ProjectTo<TaskListItemDto>(_mapper.ConfigurationProvider)
+                .ToListAsync(ct);
+
+            items = (q.Desc
+                    ? items.OrderByDescending(i => i.DueDate)
+                    : items.OrderBy(i => i.DueDate))
+                .Skip((q.Page - 1) * q.PageSize)
+                .Take(q.PageSize)
+                .ToList();
+        }
+        else
+        {
+            items = await query
+                .ProjectTo<TaskListItemDto>(_mapper.ConfigurationProvider)
+                .Skip((q.Page - 1) * q.PageSize)
+                .Take(q.PageSize)
+                .ToListAsync(ct);
+        }
+#else
+        List<TaskListItemDto> items;
+        if (sortByDueDate)
+        {
+            items = await query
+                .Select(t => new TaskListItemDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Status = t.Status,
+                    Priority = t.Priority,
+                    DueDate = t.DueDate,
+                    AssigneeId = t.AssigneeId,
+                    AssigneeUserName = t.Assignee != null ? t.Assignee.UserName : null
+                })
+                .ToListAsync(ct);
+
+            items = (q.Desc
+                    ? items.OrderByDescending(i => i.DueDate)
+                    : items.OrderBy(i => i.DueDate))
+                .Skip((q.Page - 1) * q.PageSize)
+                .Take(q.PageSize)
+                .ToList();
+        }
+        else
+        {
+            items = await query
+                .Select(t => new TaskListItemDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Status = t.Status,
+                    Priority = t.Priority,
+                    DueDate = t.DueDate,
+                    AssigneeId = t.AssigneeId,
+                    AssigneeUserName = t.Assignee != null ? t.Assignee.UserName : null
+                })
+                .Skip((q.Page - 1) * q.PageSize)
+                .Take(q.PageSize)
+                .ToListAsync(ct);
+        }
 #endif
 
         return new PagedResultDto<TaskListItemDto>

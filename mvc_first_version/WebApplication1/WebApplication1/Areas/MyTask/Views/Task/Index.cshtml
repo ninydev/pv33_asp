@@ -17,18 +17,16 @@
                 <option value="">-- Статус --</option>
                 @foreach (var s in Enum.GetValues<WebApplication1.Areas.MyTask.Entities.TaskStatus>())
                 {
-                    var selected = Context.Request.Query["Status"] == s.ToString() ? "selected" : "";
-                    <option value="@s" @selected>@s</option>
+                    <option value="@s" selected="@(Context.Request.Query["Status"] == s.ToString() ? "selected" : null)">@s</option>
                 }
             </select>
         </div>
         <div class="col-md-2">
-            <select class="form-select" name="Priority">
-                <option value="">-- Приоритет --</option>
-                @foreach (var p in Enum.GetValues<WebApplication1.Areas.MyTask.Entities.TaskPriority>())
+            <select class="form-select" name="Status">
+                <option value="">-- Статус --</option>
+                @foreach (var s in Enum.GetValues<WebApplication1.Areas.MyTask.Entities.TaskStatus>())
                 {
-                    var selected = Context.Request.Query["Priority"] == p.ToString() ? "selected" : "";
-                    <option value="@p" @selected>@p</option>
+                    <option value="@s" selected="@(Context.Request.Query["Status"] == s.ToString() ? "selected" : null)">@s</option>
                 }
             </select>
         </div>

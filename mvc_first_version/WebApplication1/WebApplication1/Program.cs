@@ -3,6 +3,8 @@ using WebApplication1.Data;
 using WebApplication1.Data.Seeds;
 using WebApplication1.Entities;
 using Microsoft.AspNetCore.Identity;
+using WebApplication1.Areas.MyTask.Repositories;
+using WebApplication1.Areas.MyTask.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,12 @@ builder.Services.AddControllersWithViews()
 //        opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 //    })
     ;
+
+
+// Регистрация репозитория
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+// Регистрация сервиса
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 var app = builder.Build();
 

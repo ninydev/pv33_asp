@@ -164,6 +164,46 @@ namespace WebApplication1.Data.Migrations
                     b.ToTable("PostEntityTagEntity");
                 });
 
+            modelBuilder.Entity("WebApplication1.Areas.MyTask.Entities.TaskEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AssigneeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssigneeId");
+
+                    b.ToTable("Tasks");
+                });
+
             modelBuilder.Entity("WebApplication1.Entities.BookModel", b =>
                 {
                     b.Property<int>("Id")
@@ -388,6 +428,15 @@ namespace WebApplication1.Data.Migrations
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("WebApplication1.Areas.MyTask.Entities.TaskEntity", b =>
+                {
+                    b.HasOne("WebApplication1.Entities.MyIdentityUserEntity", "Assignee")
+                        .WithMany()
+                        .HasForeignKey("AssigneeId");
+
+                    b.Navigation("Assignee");
                 });
 
             modelBuilder.Entity("WebApplication1.Entities.PostEntity", b =>
