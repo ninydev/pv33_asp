@@ -4,21 +4,28 @@ namespace WebApplication1.Controllers;
 
 public class FileUploadController : Controller
 {
+    private readonly ILogger<FileUploadController> _logger;
+    private readonly IWebHostEnvironment _appEnvironment;
+    public FileUploadController(ILogger<FileUploadController> logger, IWebHostEnvironment appEnvironment)
+    {
+        _logger = logger;
+        _appEnvironment = appEnvironment;
+    }
     
     public IActionResult Index() => View();
 
     [HttpPost]
-    public async Task<IActionResult> Upload(IFormFile avatar ,IWebHostEnvironment appEnvironment)
+    public async Task<IActionResult> Upload(IFormFile avatar)
     {
         // 1. Проверка: прислали ли вообще файл?
         if (avatar == null || avatar.Length == 0)
         {
-            return View();
+            return View("Index");
         }
 
         // 2. Формируем путь к папке (wwwroot/images)
         // WebRootPath указывает на физический путь к папке wwwroot
-        string uploadsFolder = Path.Combine(appEnvironment.WebRootPath, "images");
+        string uploadsFolder = Path.Combine(_appEnvironment.WebRootPath, "images");
             
         // Если папки нет, создадим её
         if (!Directory.Exists(uploadsFolder))
@@ -45,7 +52,7 @@ public class FileUploadController : Controller
         string dbPath = "/images/" + uniqueFileName;
 
         // ... ТУТ КОД СОХРАНЕНИЯ dbPath В БАЗУ ДАННЫХ ...
-        return View();
+        return View("Index");
     }
     
 }
