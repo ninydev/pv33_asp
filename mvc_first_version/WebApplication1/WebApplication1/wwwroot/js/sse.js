@@ -32,7 +32,8 @@
 */
 
 // 1) Ініціюємо постійне з'єднання з SSE‑endpoint на бекенді.
-const eventSource = new EventSource('/sse/notifications/subscribe'); // URL до контролера, що стрімить події
+//const eventSource = new EventSource('/sse/notifications/subscribe'); // URL до контролера, що стрімить події
+const eventSource = new EventSource('/sse/connect'); // URL до контролера, що стрімить події
 
 // Спрацьовує, коли канал успішно відкрився.
 eventSource.onopen = (event) => {

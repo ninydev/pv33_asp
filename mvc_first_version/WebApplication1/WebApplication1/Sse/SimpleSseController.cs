@@ -4,11 +4,11 @@ namespace WebApplication1.Controllers.Sse;
 
 
 [ApiController]
-[Route("sse/notifications")]
-public class SseController : ControllerBase
+[Route("sse/simple/notifications")]
+public class SimpleSseController : ControllerBase
 {
     private readonly ILogger _logger;
-    public SseController(ILogger logger)
+    public SimpleSseController(ILogger logger)
     {
         _logger = logger;
     }

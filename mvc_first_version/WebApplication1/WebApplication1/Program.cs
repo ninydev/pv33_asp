@@ -5,6 +5,7 @@ using WebApplication1.Entities;
 using Microsoft.AspNetCore.Identity;
 using WebApplication1.Areas.MyTask.Repositories;
 using WebApplication1.Areas.MyTask.Services;
+using WebApplication1.Sse;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,9 @@ builder.Services.AddControllersWithViews()
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 // Регистрация сервиса
 builder.Services.AddScoped<ITaskService, TaskService>();
+
+builder.Services.AddSingleton<SseService>();
+
 
 var app = builder.Build();
 
