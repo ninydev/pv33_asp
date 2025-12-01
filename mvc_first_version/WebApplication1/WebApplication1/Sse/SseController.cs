@@ -29,6 +29,15 @@ public class SseController : ControllerBase
         // Ищем ClaimTypes.NameIdentifier (обычно это ID) или ClaimTypes.Name
         string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
 
+        if (userId != null)
+        {
+            await _sseService.SendToAllAsync("User connected: " + userId + "");
+        }
+        else
+        {
+            await _sseService.SendToAllAsync("Anonymous user connected");
+        }
+
         // 2. Регистрируем клиента в сервисе
         var client = _sseService.AddClient(userId);
 
