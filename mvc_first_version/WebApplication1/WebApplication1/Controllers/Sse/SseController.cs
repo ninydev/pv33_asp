@@ -7,6 +7,12 @@ namespace WebApplication1.Controllers.Sse;
 [Route("sse/notifications")]
 public class SseController : ControllerBase
 {
+    private readonly ILogger _logger;
+    public SseController(ILogger logger)
+    {
+        _logger = logger;
+    }
+    
     [HttpGet("subscribe")]
     public async Task Get(CancellationToken cancellationToken)
     {
@@ -48,7 +54,7 @@ public class SseController : ControllerBase
         {
             // Клиент закрыл вкладку или отвалился интернет.
             // Здесь можно логировать отключение пользователя.
-            Console.WriteLine("Клиент отключился");
+            _logger.LogInformation("Клиент отключился");
         }
     }
 }

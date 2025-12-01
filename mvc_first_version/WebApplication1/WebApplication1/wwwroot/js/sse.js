@@ -9,7 +9,7 @@
   - Браузер автоматично перепідключається при розриві з'єднання.
 
   Як це працює у цьому файлі:
-  1) Створюємо EventSource з URL '/api/notifications/subscribe' — це endpoint, який має
+  1) Створюємо EventSource з URL '/sse/notifications/subscribe' — це endpoint, який має
      повертати відповідь типу text/event-stream і періодично надсилати події.
   2) Підписуємося на події:
      - onopen: викликається, коли з'єднання встановлено.
