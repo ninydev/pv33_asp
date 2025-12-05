@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="LiveBlog\Models\Posts\Dto\" />
+      <Folder Include="LiveBlog\Models\Posts\" />
     </ItemGroup>
 
 </Project>
