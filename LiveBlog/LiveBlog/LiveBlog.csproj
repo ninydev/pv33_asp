@@ -19,8 +19,4 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.21"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="LiveBlog\Models\Posts\" />
-    </ItemGroup>
-
 </Project>

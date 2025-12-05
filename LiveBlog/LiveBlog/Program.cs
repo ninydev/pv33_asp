@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using LiveBlog.Data;
 using LiveBlog.Data.Seeds;
 using LiveBlog.Models.IdentityUser;
+using LiveBlog.Services.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddDefaultIdentity<MyIdentityUserEntity>(options => options.Sig
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IStorageService, StorageService>();
 
 var app = builder.Build();
 
