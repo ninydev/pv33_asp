@@ -1,0 +1,35 @@
+@using LiveBlog.Models.Posts
+@model SmallPostResponse
+
+@{
+    ViewData["Title"] = "Видалити пост";
+}
+
+<h2 class="mb-3 text-danger">Видалити пост</h2>
+
+<div class="alert alert-warning">
+    Ви дійсно хочете видалити цей пост? Дію можна буде повернути лише вручну.
+    <br/>
+    За вимогою — фактичне видалення у контролері наразі не виконується.
+    </div>
+
+<dl class="row">
+    <dt class="col-sm-2">Id</dt>
+    <dd class="col-sm-10">@Model.Id</dd>
+
+    <dt class="col-sm-2">Slug</dt>
+    <dd class="col-sm-10">@Model.Slug</dd>
+
+    <dt class="col-sm-2">Content</dt>
+    <dd class="col-sm-10">
+        <pre class="mb-0">@Model.Content</pre>
+    </dd>
+</dl>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" name="id" value="@Model.Id"/>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">Підтвердити видалення</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
+    </div>
+</form>

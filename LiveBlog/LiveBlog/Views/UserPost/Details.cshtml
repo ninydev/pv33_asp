@@ -1,0 +1,51 @@
+@using LiveBlog.Models.Posts
+@model SmallPostResponse
+
+@{
+    ViewData["Title"] = $"Пост #{Model.Id}";
+}
+
+<h2 class="mb-3">Деталі поста</h2>
+
+<dl class="row">
+    <dt class="col-sm-2">Id</dt>
+    <dd class="col-sm-10">@Model.Id</dd>
+
+    <dt class="col-sm-2">Slug</dt>
+    <dd class="col-sm-10">@Model.Slug</dd>
+
+    <dt class="col-sm-2">Content</dt>
+    <dd class="col-sm-10">
+        <pre class="mb-0">@Model.Content</pre>
+    </dd>
+</dl>
+
+<h4 class="mt-4">Медіафайли</h4>
+@if (Model.FileNames?.Any() == true)
+{
+    <div class="row g-3">
+        @foreach (var f in Model.FileNames)
+        {
+            <div class="col-md-3">
+                <div class="card">
+                    <img src="/storage/@f" class="card-img-top" alt="media" onerror="this.style.display='none'"/>
+                    <div class="card-body">
+                        <small class="text-muted">@f</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary">Немає вкладень.</div>
+}
+
+<div class="mt-4 d-flex gap-2">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редагувати</a>
+    <a asp-action="Index" class="btn btn-outline-secondary">Повернутись</a>
+    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">Видалити</a>
+    <a asp-action="DetailsBySlug" asp-route-slug="@Model.Slug" class="btn btn-outline-info">Відкрити за Slug</a>
+    
+</div>

@@ -1,0 +1,76 @@
+@using LiveBlog.Models.Posts
+@model IEnumerable<SmallPostResponse>
+
+@{
+    ViewData["Title"] = "Мої пости";
+    var pageNumber = (int)(ViewBag.Page ?? 1);
+    var pageSize = (int)(ViewBag.PageSize ?? 10);
+    var total = (int)(ViewBag.Total ?? (Model?.Count() ?? 0));
+    var sort = (string)(ViewBag.Sort ?? "id_desc");
+    var totalPages = (int)Math.Ceiling((double)Math.Max(0, total) / Math.Max(1, pageSize));
+}
+
+<h2 class="mb-3">Мої пости</h2>
+
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-primary">Створити пост</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+        <tr>
+            <th>
+                <a asp-action="Index" asp-route-page="@pageNumber" asp-route-pageSize="@pageSize" asp-route-sort="@(sort == "id_asc" ? "id_desc" : "id_asc")">Id</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-page="@pageNumber" asp-route-pageSize="@pageSize" asp-route-sort="@(sort == "slug_asc" ? "slug_desc" : "slug_asc")">Slug</a>
+            </th>
+            <th>Content</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Slug</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(item.Content))
+                    {
+                        @(item.Content.Length > 80 ? item.Content.Substring(0, 80) + "…" : item.Content)
+                    }
+                </td>
+                <td class="text-end">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Деталі</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Редагувати</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Видалити</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Поки що немає постів.</div>
+    }
+}</div>
+
+<nav aria-label="Пагінація">
+    <ul class="pagination">
+        <li class="page-item @(pageNumber <= 1 ? "disabled" : null)">
+            <a class="page-link" asp-action="Index" asp-route-page="@(pageNumber - 1)" asp-route-pageSize="@pageSize" asp-route-sort="@sort">Попередня</a>
+        </li>
+        @for (var p = 1; p <= Math.Max(1, totalPages); p++)
+        {
+            <li class="page-item @(p == pageNumber ? "active" : null)">
+                <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@pageSize" asp-route-sort="@sort">@p</a>
+            </li>
+        }
+        <li class="page-item @(pageNumber >= totalPages ? "disabled" : null)">
+            <a class="page-link" asp-action="Index" asp-route-page="@(pageNumber + 1)" asp-route-pageSize="@pageSize" asp-route-sort="@sort">Наступна</a>
+        </li>
+    </ul>
+    <div class="text-muted">Всього: @total • Сторінка @pageNumber з @totalPages</div>
+}</nav>

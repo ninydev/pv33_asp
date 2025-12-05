@@ -1,0 +1,48 @@
+@using LiveBlog.Models.Posts
+@model UpdatePostRequest
+
+@{
+    ViewData["Title"] = "Редагувати пост";
+}
+
+<h2 class="mb-3">Редагувати пост</h2>
+
+<div class="alert alert-info">
+    Семантика файлів:
+    <ul class="mb-0">
+        <li>Не вибирайте файли — вкладення лишаються без змін.</li>
+        <li>Виберіть порожній список (очистіть поле) — вкладення буде очищено.</li>
+        <li>Додайте файли — вкладення буде повністю замінено новими.</li>
+    </ul>
+    <small>У браузері важко надіслати «порожній список» — зазвичай залишіть поле пустим для «без змін», або оберіть файли для «замінити повністю».</small>
+    </div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Slug" class="form-label"></label>
+                <input asp-for="Slug" class="form-control" />
+                <span asp-validation-for="Slug" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Content" class="form-label"></label>
+                <textarea asp-for="Content" class="form-control" rows="6"></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Files" class="form-label">Файли (за потреби)</label>
+                <input asp-for="Files" type="file" class="form-control" multiple />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Зберегти</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
+            </div>
+        </form>
+    </div>
+</div>

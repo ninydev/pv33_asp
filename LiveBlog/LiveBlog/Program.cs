@@ -4,6 +4,9 @@ using LiveBlog.Data;
 using LiveBlog.Data.Seeds;
 using LiveBlog.Models.IdentityUser;
 using LiveBlog.Services.Storage;
+using LiveBlog.Repositories.Base;
+using LiveBlog.Repositories.Posts;
+using LiveBlog.Services.Posts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +22,13 @@ builder.Services.AddDefaultIdentity<MyIdentityUserEntity>(options => options.Sig
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+
+
 builder.Services.AddScoped<IStorageService, StorageService>();
+// Реєстрація DI для репозиторіїв та сервісів
+builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 var app = builder.Build();
 

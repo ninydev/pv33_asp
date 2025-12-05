@@ -1,5 +1,9 @@
 using LiveBlog.Models.Posts;
+using LiveBlog.Models.Media;
 using LiveBlog.Repositories.Posts;
+using LiveBlog.Services.Storage;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace LiveBlog.Services.Posts;
 
@@ -10,10 +14,12 @@ namespace LiveBlog.Services.Posts;
 public class PostService : IPostService
 {
     private readonly IPostRepository _repo;
+    private readonly IStorageService _storage;
 
-    public PostService(IPostRepository repo)
+    public PostService(IPostRepository repo, IStorageService storage)
     {
         _repo = repo;
+        _storage = storage;
     }
 
     /// <inheritdoc />
@@ -32,6 +38,20 @@ public class PostService : IPostService
         var entity = PostMapper.FromCreateRequest(request);
         entity.Slug = entity.Slug.Trim();
         entity.Content = entity.Content.Trim();
+
+        // Зберігаємо файли у сховище та підміняємо назви файлів на збережені шляхи
+        if (request.Files is { Count: > 0 })
+        {
+            entity.MediaFiles.Clear();
+            foreach (var file in request.Files.Where(f => f is { Length: > 0 }))
+            {
+                var savedPath = await _storage.UploadAsync("posts", file, cancellationToken);
+                entity.MediaFiles.Add(new PostMediaFileEntity
+                {
+                    FileName = savedPath
+                });
+            }
+        }
 
         entity = await _repo.AddAsync(entity, cancellationToken);
 
@@ -54,7 +74,50 @@ public class PostService : IPostService
                 throw new InvalidOperationException("Допис із таким slug вже існує");
         }
 
-        PostMapper.ApplyUpdate(entity, request);
+        // Якщо файли не передані (null) — не змінюємо вкладення
+        // Якщо порожній список — очищаємо вкладення
+        // Якщо є файли — перезберігаємо у сховище та замінюємо колекцію медіафайлів
+        if (request.Files is null)
+        {
+            // застосовуємо лише текстові зміни
+            PostMapper.ApplyUpdate(entity, new UpdatePostRequest
+            {
+                Slug = request.Slug,
+                Content = request.Content,
+                Files = null
+            });
+        }
+        else if (request.Files.Count == 0)
+        {
+            // очищення вкладень
+            PostMapper.ApplyUpdate(entity, new UpdatePostRequest
+            {
+                Slug = request.Slug,
+                Content = request.Content,
+                Files = request.Files // порожня колекція — призведе до Clear()
+            });
+        }
+        else
+        {
+            // Завантажуємо всі передані файли та повністю замінюємо колекцію
+            entity.MediaFiles.Clear();
+            foreach (var file in request.Files.Where(f => f is { Length: > 0 }))
+            {
+                var savedPath = await _storage.UploadAsync("posts", file, cancellationToken);
+                entity.MediaFiles.Add(new PostMediaFileEntity
+                {
+                    FileName = savedPath
+                });
+            }
+
+            // застосуємо текстові зміни (Slug/Content)
+            PostMapper.ApplyUpdate(entity, new UpdatePostRequest
+            {
+                Slug = request.Slug,
+                Content = request.Content,
+                Files = null // файли вже обробили вручну
+            });
+        }
 
         await _repo.UpdateAsync(entity, cancellationToken);
         return true;

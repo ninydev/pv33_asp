@@ -20,8 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="LiveBlog\Repositories\" />
-      <Folder Include="LiveBlog\Services\" />
       <Folder Include="Repositories\" />
     </ItemGroup>
 
