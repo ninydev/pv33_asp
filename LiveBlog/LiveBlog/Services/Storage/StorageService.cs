@@ -4,16 +4,51 @@ using Microsoft.AspNetCore.Http;
 
 namespace LiveBlog.Services.Storage;
 
+/// <summary>
+/// Сервіс збереження файлів у файловій системі застосунку.
+/// Підтримує завантаження та видалення файлів у межах кореня сховища,
+/// який обчислюється як <c>Path.Combine(WebRootPath, "storage")</c>.
+/// </summary>
 public interface IStorageService
 {
-    // Загружает файл в корзину и возвращает относительный путь вида:
-    // {bucket}/{yyyy}/{MM}/{dd}/{GUID}_{originalFileName}
+    /// <summary>
+    /// Завантажує файл у вказану «корзину» та повертає відносний шлях
+    /// у форматі <c>{bucket}/{yyyy}/{MM}/{dd}/{GUID}_{originalFileName}</c>.
+    /// </summary>
+    /// <param name="bucket">Назва корзини (логічний розділ сховища), наприклад <c>posts</c>.</param>
+    /// <param name="file">Файл для збереження.</param>
+    /// <param name="cancellationToken">Токен скасування.</param>
+    /// <returns>
+    /// Відносний шлях без домену/хоста та без фізичного кореня сховища
+    /// (наприклад: <c>posts/2025/12/05/ae1f...c9_my-photo.jpg</c>).
+    /// </returns>
+    /// <remarks>
+    /// Для структури каталогів використовується час у UTC, щоб уникнути залежності від локалі.
+    /// Ім'я файлу очищається за допомогою <see cref="Path.GetFileName(string)"/> для запобігання path traversal.
+    /// </remarks>
+    /// <exception cref="ArgumentException">
+    /// Кинуто, якщо файл порожній або назва корзини некоректна/порожня.
+    /// </exception>
     Task<string> UploadAsync(string bucket, IFormFile file, CancellationToken cancellationToken = default);
 
-    // Удаляет файл, где relativePath — путь относительно корзины (например: 2025/12/05/GUID_photo.jpg)
+    /// <summary>
+    /// Видаляє файл за відносним шляхом всередині заданої корзини.
+    /// </summary>
+    /// <param name="bucket">Назва корзини (наприклад: <c>posts</c>).
+    /// </param>
+    /// <param name="relativePath">Відносний шлях відносно корзини
+    /// (наприклад: <c>2025/12/05/GUID_photo.jpg</c>).</param>
+    /// <param name="cancellationToken">Токен скасування.</param>
+    /// <returns>
+    /// <c>true</c>, якщо файл існував і був успішно видалений; інакше <c>false</c>.
+    /// </returns>
     Task<bool> DeleteAsync(string bucket, string relativePath, CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// Реалізація <see cref="IStorageService"/> на основі локальної файлової системи.
+/// Корінь сховища: <c>Path.Combine(WebRootPath, "storage")</c>.
+/// </summary>
 public class StorageService : IStorageService
 {
     private readonly IWebHostEnvironment _env;
@@ -28,22 +63,22 @@ public class StorageService : IStorageService
     public async Task<string> UploadAsync(string bucket, IFormFile file, CancellationToken cancellationToken = default)
     {
         if (file == null || file.Length == 0)
-            throw new ArgumentException("File is empty", nameof(file));
+            throw new ArgumentException("Файл порожній", nameof(file));
 
         bucket = NormalizeSegment(bucket);
         if (string.IsNullOrWhiteSpace(bucket))
-            throw new ArgumentException("Bucket is required", nameof(bucket));
+            throw new ArgumentException("Потрібна назва корзини", nameof(bucket));
 
-        var now = DateTime.UtcNow; // хранение по UTC, ссылка не зависит от локали
+        var now = DateTime.UtcNow; // зберігання за UTC, шлях не залежить від локалі
         var yyyy = now.ToString("yyyy", CultureInfo.InvariantCulture);
         var mm = now.ToString("MM", CultureInfo.InvariantCulture);
         var dd = now.ToString("dd", CultureInfo.InvariantCulture);
 
-        var originalName = Path.GetFileName(file.FileName); // защита от path traversal в имени
+        var originalName = Path.GetFileName(file.FileName); // захист від path traversal у назві
         var uniquePrefix = Guid.NewGuid().ToString("N");
         var targetFileName = $"{uniquePrefix}_{originalName}";
 
-        // Абсолютный путь сохранения
+        // Абсолютний шлях збереження
         var physicalDir = Path.Combine(StorageRoot, bucket, yyyy, mm, dd);
         Directory.CreateDirectory(physicalDir);
 
@@ -53,7 +88,7 @@ public class StorageService : IStorageService
             await file.CopyToAsync(stream, cancellationToken);
         }
 
-        // Относительный путь относительно корня хранилища (без StorageRoot)
+        // Відносний шлях відносно кореня сховища (без StorageRoot)
         var relativePath = string.Join('/', new[] { bucket, yyyy, mm, dd, targetFileName });
         return relativePath;
     }
@@ -62,16 +97,16 @@ public class StorageService : IStorageService
     {
         bucket = NormalizeSegment(bucket);
         if (string.IsNullOrWhiteSpace(bucket))
-            throw new ArgumentException("Bucket is required", nameof(bucket));
+            throw new ArgumentException("Потрібна назва корзини", nameof(bucket));
 
-        // relativePath ожидается относительно корзины (например: 2025/12/05/GUID_photo.jpg)
+        // Очікується шлях відносно корзини (наприклад: 2025/12/05/GUID_photo.jpg)
         var safeRelative = NormalizeRelativePath(relativePath);
         if (string.IsNullOrWhiteSpace(safeRelative))
             return Task.FromResult(false);
 
         var physicalPath = Path.Combine(StorageRoot, bucket, safeRelative);
 
-        // Принудительно убеждаемся, что путь остаётся внутри StorageRoot
+        // Примусово переконуємось, що шлях залишається всередині StorageRoot
         var full = Path.GetFullPath(physicalPath);
         var root = Path.GetFullPath(StorageRoot);
         if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
@@ -89,11 +124,11 @@ public class StorageService : IStorageService
     private static string NormalizeSegment(string? segment)
     {
         if (string.IsNullOrWhiteSpace(segment)) return string.Empty;
-        // Заменяем обратные слеши, убираем ведущие/замыкающие слеши/пробелы
+        // Замінюємо зворотні слеші, прибираємо початкові/кінцеві слеші/пробіли
         segment = segment.Replace('\\', '/').Trim().Trim('/');
-        // Запрещаем восхождение по каталогам
+        // Забороняємо піднімання по каталогах
         if (segment.Contains(".."))
-            throw new ArgumentException("Invalid segment");
+            throw new ArgumentException("Некоректний сегмент шляху");
         return segment;
     }
 
