@@ -22,9 +22,8 @@ builder.Services.AddDefaultIdentity<MyIdentityUserEntity>(options => options.Sig
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
-
-
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddHttpContextAccessor();
 // Реєстрація DI для репозиторіїв та сервісів
 builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 builder.Services.AddScoped<IPostRepository, PostRepository>();

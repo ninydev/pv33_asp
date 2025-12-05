@@ -3,6 +3,7 @@ using LiveBlog.Models.Media;
 using LiveBlog.Repositories.Posts;
 using LiveBlog.Services.Storage;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using System.Linq;
 
 namespace LiveBlog.Services.Posts;
@@ -15,16 +16,19 @@ public class PostService : IPostService
 {
     private readonly IPostRepository _repo;
     private readonly IStorageService _storage;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public PostService(IPostRepository repo, IStorageService storage)
+    public PostService(IPostRepository repo, IStorageService storage, IHttpContextAccessor httpContextAccessor)
     {
         _repo = repo;
         _storage = storage;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <inheritdoc />
     public async Task<SmallPostResponse> CreateAsync(CreatePostRequest request, CancellationToken cancellationToken = default)
     {
+        var userId = GetCurrentUserIdOrThrow();
         if (string.IsNullOrWhiteSpace(request.Slug))
             throw new ArgumentException("Slug обов'язковий", nameof(request.Slug));
         if (string.IsNullOrWhiteSpace(request.Content))
@@ -38,6 +42,7 @@ public class PostService : IPostService
         var entity = PostMapper.FromCreateRequest(request);
         entity.Slug = entity.Slug.Trim();
         entity.Content = entity.Content.Trim();
+        entity.UserId = userId; // фіксуємо автора створення
 
         // Зберігаємо файли у сховище та підміняємо назви файлів на збережені шляхи
         if (request.Files is { Count: > 0 })
@@ -48,7 +53,8 @@ public class PostService : IPostService
                 var savedPath = await _storage.UploadAsync("posts", file, cancellationToken);
                 entity.MediaFiles.Add(new PostMediaFileEntity
                 {
-                    FileName = savedPath
+                    FileName = savedPath,
+                    UserId = userId
                 });
             }
         }
@@ -65,6 +71,7 @@ public class PostService : IPostService
     {
         var entity = await _repo.GetWithMediaByIdAsync(id, cancellationToken);
         if (entity is null) return false;
+        var userId = GetCurrentUserIdOrThrow();
 
         // Якщо змінюємо slug — перевіряємо унікальність
         if (!string.IsNullOrWhiteSpace(request.Slug) && !string.Equals(request.Slug, entity.Slug, StringComparison.Ordinal))
@@ -106,7 +113,8 @@ public class PostService : IPostService
                 var savedPath = await _storage.UploadAsync("posts", file, cancellationToken);
                 entity.MediaFiles.Add(new PostMediaFileEntity
                 {
-                    FileName = savedPath
+                    FileName = savedPath,
+                    UserId = userId
                 });
             }
 
@@ -119,6 +127,8 @@ public class PostService : IPostService
             });
         }
 
+        // Оновлюємо часову мітку оновлення
+        entity.UpdatedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(entity, cancellationToken);
         return true;
     }
@@ -156,5 +166,16 @@ public class PostService : IPostService
         // Для простоти: забираємо всі пости з медіа через include string
         var list = await _repo.ListAsync(includeString: nameof(PostEntity.MediaFiles), cancellationToken: cancellationToken);
         return list.Select(PostMapper.ToSmallResponse).ToList();
+    }
+    /// <summary>
+    /// Повертає ідентифікатор поточного автентифікованого користувача або кидає виняток.
+    /// </summary>
+    private string GetCurrentUserIdOrThrow()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        var id = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(id))
+            throw new InvalidOperationException("Користувач не автентифікований або відсутній ідентифікатор користувача.");
+        return id;
     }
 }
