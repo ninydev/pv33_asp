@@ -17,19 +17,16 @@ public class PostService : IPostService
 {
     private readonly IPostRepository _repo;
     private readonly IStorageService _storage;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public PostService(IPostRepository repo, IStorageService storage, IHttpContextAccessor httpContextAccessor)
     {
         _repo = repo;
         _storage = storage;
-        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <inheritdoc />
     public async Task<SmallPostResponse> CreateAsync(CreatePostRequest request, CancellationToken cancellationToken = default)
     {
-        var userId = GetCurrentUserIdOrThrow();
         if (string.IsNullOrWhiteSpace(request.Slug))
             throw new ArgumentException("Slug обов'язковий", nameof(request.Slug));
         if (string.IsNullOrWhiteSpace(request.Content))
@@ -43,7 +40,6 @@ public class PostService : IPostService
         var entity = PostMapper.FromCreateRequest(request);
         entity.Slug = entity.Slug.Trim();
         entity.Content = entity.Content.Trim();
-        entity.UserId = userId; // фіксуємо автора створення
 
         // Зберігаємо файли у сховище та підміняємо назви файлів на збережені шляхи
         if (request.Files is { Count: > 0 })
@@ -55,7 +51,7 @@ public class PostService : IPostService
                 entity.MediaFiles.Add(new PostMediaFileEntity
                 {
                     FileName = savedPath,
-                    UserId = userId
+                    UserId = entity.UserId
                 });
             }
         }
@@ -72,7 +68,6 @@ public class PostService : IPostService
     {
         var entity = await _repo.GetWithMediaByIdAsync(id, cancellationToken);
         if (entity is null) return false;
-        var userId = GetCurrentUserIdOrThrow();
 
         // Якщо змінюємо slug — перевіряємо унікальність
         if (!string.IsNullOrWhiteSpace(request.Slug) && !string.Equals(request.Slug, entity.Slug, StringComparison.Ordinal))
@@ -115,7 +110,7 @@ public class PostService : IPostService
                 entity.MediaFiles.Add(new PostMediaFileEntity
                 {
                     FileName = savedPath,
-                    UserId = userId
+                    UserId = entity.UserId
                 });
             }
 
@@ -139,6 +134,7 @@ public class PostService : IPostService
     {
         var entity = await _repo.GetByIdAsync(id, cancellationToken);
         if (entity is null) return false;
+
         await _repo.DeleteAsync(entity, cancellationToken);
         return true;
     }
@@ -147,7 +143,9 @@ public class PostService : IPostService
     public async Task<SmallPostResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var entity = await _repo.GetWithMediaByIdAsync(id, cancellationToken);
-        return entity is null ? null : PostMapper.ToSmallResponse(entity);
+        if (entity is null) return null;
+        
+        return PostMapper.ToSmallResponse(entity);
     }
 
     /// <inheritdoc />
@@ -156,6 +154,7 @@ public class PostService : IPostService
         var entity = await _repo.GetBySlugAsync(slug, cancellationToken);
         if (entity == null)
             return null;
+        
         // Якщо отримали без медіа — доберемо повну версію для коректного мапінгу
         var withMedia = await _repo.GetWithMediaByIdAsync(entity.Id, cancellationToken) ?? entity;
         return PostMapper.ToSmallResponse(withMedia);
@@ -182,9 +181,25 @@ public class PostService : IPostService
         PagedSortedFilteredRequest<PostSort, PostFilter> request,
         CancellationToken cancellationToken = default)
     {
+        var safeRequest = new PagedSortedFilteredRequest<PostSort, PostFilter>
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            SortBy = request.SortBy,
+            SortDirection = request.SortDirection,
+            Filter = new PostFilter
+            {
+                Query = request.Filter?.Query,
+                SlugContains = request.Filter?.SlugContains,
+                ContentContains = request.Filter?.ContentContains,
+                DateFrom = request.Filter?.DateFrom,
+                DateTo = request.Filter?.DateTo
+            }
+        };
+
         // За замовчуванням підтягуємо медіафайли
         var includes = new[] { nameof(PostEntity.MediaFiles) };
-        var result = await _repo.ListAsync(request, includes, cancellationToken);
+        var result = await _repo.ListAsync(safeRequest, includes, cancellationToken);
         return new PagedResult<SmallPostResponse>
         {
             Items = result.Items.Select(PostMapper.ToSmallResponse).ToList(),
@@ -193,15 +208,5 @@ public class PostService : IPostService
             PageSize = result.PageSize
         };
     }
-    /// <summary>
-    /// Повертає ідентифікатор поточного автентифікованого користувача або кидає виняток.
-    /// </summary>
-    private string GetCurrentUserIdOrThrow()
-    {
-        var user = _httpContextAccessor.HttpContext?.User;
-        var id = user?.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(id))
-            throw new InvalidOperationException("Користувач не автентифікований або відсутній ідентифікатор користувача.");
-        return id;
-    }
+
 }

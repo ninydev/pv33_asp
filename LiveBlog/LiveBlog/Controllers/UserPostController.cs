@@ -3,6 +3,7 @@ using LiveBlog.Services.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using LiveBlog.Models.Base;
+using LiveBlog.Services;
 
 namespace LiveBlog.Controllers;
 
@@ -14,6 +15,7 @@ namespace LiveBlog.Controllers;
 public class UserPostController : Controller
 {
     private readonly IPostService _postService;
+    private readonly AuthService _authService;
 
     public UserPostController(IPostService postService)
     {
@@ -31,6 +33,7 @@ public class UserPostController : Controller
     [HttpGet]
     public async Task<IActionResult> Index([FromQuery] PagedSortedFilteredRequest<PostSort, PostFilter> request, CancellationToken ct = default)
     {
+        request.Filter.UserId = _authService.GetCurrentUserIdOrThrow();
         var result = await _postService.ListAsync(request, ct);
         return View(result);
     }
