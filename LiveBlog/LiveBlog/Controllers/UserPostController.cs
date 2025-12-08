@@ -17,9 +17,10 @@ public class UserPostController : Controller
     private readonly IPostService _postService;
     private readonly AuthService _authService;
 
-    public UserPostController(IPostService postService)
+    public UserPostController(IPostService postService, AuthService authService)
     {
         _postService = postService;
+        _authService = authService;
     }
 
     /// <summary>
@@ -33,7 +34,16 @@ public class UserPostController : Controller
     [HttpGet]
     public async Task<IActionResult> Index([FromQuery] PagedSortedFilteredRequest<PostSort, PostFilter> request, CancellationToken ct = default)
     {
-        request.Filter.UserId = _authService.GetCurrentUserIdOrThrow();
+        // 1. Инициализируем фильтр, если он не пришел в запросе (равен null)
+        var filter = request.Filter ?? new PostFilter();
+            
+        // 2. Устанавливаем ID текущего пользователя
+        filter.UserId = _authService.GetCurrentUserIdOrThrow();
+            
+        // 3. Обновляем объект запроса.
+        // Так как request - это immutable record, мы используем 'with' для создания измененной копии.
+        request = request with { Filter = filter };
+
         var result = await _postService.ListAsync(request, ct);
         return View(result);
     }
