@@ -5,6 +5,7 @@ using LiveBlog.Services.Storage;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
+using LiveBlog.Models.Base;
 
 namespace LiveBlog.Services.Posts;
 
@@ -163,9 +164,34 @@ public class PostService : IPostService
     /// <inheritdoc />
     public async Task<IReadOnlyList<SmallPostResponse>> ListAsync(CancellationToken cancellationToken = default)
     {
-        // Для простоти: забираємо всі пости з медіа через include string
-        var list = await _repo.ListAsync(includeString: nameof(PostEntity.MediaFiles), cancellationToken: cancellationToken);
-        return list.Select(PostMapper.ToSmallResponse).ToList();
+        // Делегуємо на новий варіант із типовими параметрами (пагінація/сортування за замовчуванням)
+        var paged = await ListAsync(new PagedSortedFilteredRequest<PostSort, PostFilter>
+        {
+            SortBy = PostSort.Id,
+            SortDirection = SortDirection.Desc,
+            Page = 1,
+            PageSize = 100 // розумне значення за замовчуванням для старого методу
+        }, cancellationToken);
+        return paged.Items.ToList();
+    }
+
+    /// <summary>
+    /// Повертає пагінований список постів з урахуванням сортування, фільтрації та включень.
+    /// </summary>
+    public async Task<PagedResult<SmallPostResponse>> ListAsync(
+        PagedSortedFilteredRequest<PostSort, PostFilter> request,
+        CancellationToken cancellationToken = default)
+    {
+        // За замовчуванням підтягуємо медіафайли
+        var includes = new[] { nameof(PostEntity.MediaFiles) };
+        var result = await _repo.ListAsync(request, includes, cancellationToken);
+        return new PagedResult<SmallPostResponse>
+        {
+            Items = result.Items.Select(PostMapper.ToSmallResponse).ToList(),
+            Total = result.Total,
+            Page = result.Page,
+            PageSize = result.PageSize
+        };
     }
     /// <summary>
     /// Повертає ідентифікатор поточного автентифікованого користувача або кидає виняток.

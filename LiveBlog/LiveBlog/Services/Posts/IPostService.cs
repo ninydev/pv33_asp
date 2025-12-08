@@ -1,5 +1,6 @@
 using LiveBlog.Models.Posts;
 using LiveBlog.Services.Base;
+using LiveBlog.Models.Base;
 
 namespace LiveBlog.Services.Posts;
 
@@ -37,4 +38,11 @@ public interface IPostService : IService
     /// Повертає список дописів у вигляді коротких відповідей.
     /// </summary>
     Task<IReadOnlyList<SmallPostResponse>> ListAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Повертає пагінований список дописів з підтримкою сортування та фільтрації.
+    /// </summary>
+    Task<PagedResult<SmallPostResponse>> ListAsync(
+        PagedSortedFilteredRequest<PostSort, PostFilter> request,
+        CancellationToken cancellationToken = default);
 }

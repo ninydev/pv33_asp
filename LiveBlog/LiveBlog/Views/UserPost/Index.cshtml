@@ -1,13 +1,27 @@
 @using LiveBlog.Models.Posts
-@model IEnumerable<SmallPostResponse>
+@using LiveBlog.Models.Base
+@model PagedResult<SmallPostResponse>
 
 @{
     ViewData["Title"] = "Мої пости";
-    var pageNumber = (int)(ViewBag.Page ?? 1);
-    var pageSize = (int)(ViewBag.PageSize ?? 10);
-    var total = (int)(ViewBag.Total ?? (Model?.Count() ?? 0));
-    var sort = (string)(ViewBag.Sort ?? "id_desc");
+    var pageNumber = Model?.Page ?? 1;
+    var pageSize = Model?.PageSize ?? 10;
+    var total = Model?.Total ?? 0;
     var totalPages = (int)Math.Ceiling((double)Math.Max(0, total) / Math.Max(1, pageSize));
+    var sortBy = Context.Request.Query["SortBy"].ToString();
+    var sortDir = Context.Request.Query["SortDirection"].ToString();
+    var query = Context.Request.Query["Filter.Query"].ToString();
+    string ToggleDir(string column) => (string.Equals(sortBy, column, StringComparison.OrdinalIgnoreCase) && string.Equals(sortDir, "Asc", StringComparison.OrdinalIgnoreCase)) ? "Desc" : "Asc";
+    string BaseUrl() => Url.Action("Index", "UserPost") ?? "";
+    string Qs(string? sBy, string? sDir, int? page = null) {
+        var parts = new List<string>();
+        parts.Add($"Page={(page ?? pageNumber)}");
+        parts.Add($"PageSize={pageSize}");
+        if (!string.IsNullOrWhiteSpace(query)) parts.Add($"Filter.Query={Uri.EscapeDataString(query)}");
+        if (!string.IsNullOrWhiteSpace(sBy)) parts.Add($"SortBy={sBy}");
+        if (!string.IsNullOrWhiteSpace(sDir)) parts.Add($"SortDirection={sDir}");
+        return string.Join("&", parts);
+    }
 }
 
 <h2 class="mb-3">Мої пости</h2>
@@ -16,22 +30,43 @@
     <a asp-action="Create" class="btn btn-primary">Створити пост</a>
 </div>
 
+<form method="get" class="row g-2 mb-3">
+    <div class="col-sm-6 col-md-4">
+        <input type="text" name="Filter.Query" value="@query" class="form-control" placeholder="Пошук по slug/content" />
+    </div>
+    <input type="hidden" name="Page" value="1" />
+    <input type="hidden" name="PageSize" value="@pageSize" />
+    <input type="hidden" name="SortBy" value="@sortBy" />
+    <input type="hidden" name="SortDirection" value="@sortDir" />
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Пошук</button>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(query))
+    {
+        <div class="col-auto">
+            <a class="btn btn-link" href="@BaseUrl()?@Qs(sortBy, sortDir, 1)">Очистити</a>
+        </div>
+    }
+</form>
+
 <div class="table-responsive">
     <table class="table table-striped align-middle">
         <thead>
         <tr>
             <th>
-                <a asp-action="Index" asp-route-page="@pageNumber" asp-route-pageSize="@pageSize" asp-route-sort="@(sort == "id_asc" ? "id_desc" : "id_asc")">Id</a>
+                @{ var hrefId = BaseUrl() + "?" + Qs("Id", ToggleDir("Id"), pageNumber); }
+                <a href="@hrefId">Id</a>
             </th>
             <th>
-                <a asp-action="Index" asp-route-page="@pageNumber" asp-route-pageSize="@pageSize" asp-route-sort="@(sort == "slug_asc" ? "slug_desc" : "slug_asc")">Slug</a>
+                @{ var hrefSlug = BaseUrl() + "?" + Qs("Slug", ToggleDir("Slug"), pageNumber); }
+                <a href="@hrefSlug">Slug</a>
             </th>
             <th>Content</th>
             <th></th>
         </tr>
         </thead>
         <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model.Items)
         {
             <tr>
                 <td>@item.Id</td>
@@ -51,26 +86,23 @@
         }
         </tbody>
     </table>
-    @if (!Model.Any())
+    @if (!(Model.Items?.Any() ?? false))
     {
         <div class="alert alert-info">Поки що немає постів.</div>
     }
-}</div>
+</div>
 
 <nav aria-label="Пагінація">
     <ul class="pagination">
-        <li class="page-item @(pageNumber <= 1 ? "disabled" : null)">
-            <a class="page-link" asp-action="Index" asp-route-page="@(pageNumber - 1)" asp-route-pageSize="@pageSize" asp-route-sort="@sort">Попередня</a>
-        </li>
+        @{ var prevHref = BaseUrl() + "?" + Qs(sortBy, sortDir, Math.Max(1, pageNumber - 1));
+           var nextHref = BaseUrl() + "?" + Qs(sortBy, sortDir, Math.Min(Math.Max(1, totalPages), pageNumber + 1)); }
+        <li class="page-item @(pageNumber <= 1 ? "disabled" : null)"><a class="page-link" href="@prevHref">Попередня</a></li>
         @for (var p = 1; p <= Math.Max(1, totalPages); p++)
         {
-            <li class="page-item @(p == pageNumber ? "active" : null)">
-                <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-pageSize="@pageSize" asp-route-sort="@sort">@p</a>
-            </li>
+            var pHref = BaseUrl() + "?" + Qs(sortBy, sortDir, p);
+            <li class="page-item @(p == pageNumber ? "active" : null)"><a class="page-link" href="@pHref">@p</a></li>
         }
-        <li class="page-item @(pageNumber >= totalPages ? "disabled" : null)">
-            <a class="page-link" asp-action="Index" asp-route-page="@(pageNumber + 1)" asp-route-pageSize="@pageSize" asp-route-sort="@sort">Наступна</a>
-        </li>
+        <li class="page-item @(pageNumber >= totalPages ? "disabled" : null)"><a class="page-link" href="@nextHref">Наступна</a></li>
     </ul>
     <div class="text-muted">Всього: @total • Сторінка @pageNumber з @totalPages</div>
-}</nav>
+</nav>

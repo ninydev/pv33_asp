@@ -2,6 +2,7 @@ using LiveBlog.Models.Posts;
 using LiveBlog.Services.Posts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using LiveBlog.Models.Base;
 
 namespace LiveBlog.Controllers;
 
@@ -20,32 +21,18 @@ public class UserPostController : Controller
     }
 
     /// <summary>
-    /// Список власних дописів користувача з простою пагінацією та сортуванням.
-    /// Примітка: демо-варіант робить сортування/пагінацію у пам'яті після отримання списку.
+    /// Список постів з підтримкою пагінації, сортування та фільтрації.
+    /// Приймає комплексний запит напряму із query-рядка.
+    /// Приклади:
+    ///  - ?Page=1&PageSize=10&SortBy=Id&SortDirection=Desc
+    ///  - ?Filter.Query=aspnet&SortBy=CreatedAt&SortDirection=Desc
+    ///  - ?Filter.UserId=123&Filter.DateFrom=2025-01-01&Filter.DateTo=2025-12-31
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? sort = "id_desc", CancellationToken ct = default)
+    public async Task<IActionResult> Index([FromQuery] PagedSortedFilteredRequest<PostSort, PostFilter> request, CancellationToken ct = default)
     {
-        // TODO: Фільтрація за поточним користувачем потребує розширення сервісу (UserId).
-        var items = await _postService.ListAsync(ct);
-
-        items = sort?.ToLower() switch
-        {
-            "id_asc" => items.OrderBy(x => x.Id).ToList(),
-            "slug_asc" => items.OrderBy(x => x.Slug).ToList(),
-            "slug_desc" => items.OrderByDescending(x => x.Slug).ToList(),
-            _ => items.OrderByDescending(x => x.Id).ToList(),
-        };
-
-        var total = items.Count;
-        var skip = (page - 1) * pageSize;
-        var pageItems = items.Skip(skip).Take(pageSize).ToList();
-
-        ViewBag.Page = page;
-        ViewBag.PageSize = pageSize;
-        ViewBag.Total = total;
-        ViewBag.Sort = sort;
-        return View(pageItems);
+        var result = await _postService.ListAsync(request, ct);
+        return View(result);
     }
 
     /// <summary>
