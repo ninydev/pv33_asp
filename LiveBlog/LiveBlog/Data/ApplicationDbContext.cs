@@ -29,5 +29,10 @@ public class ApplicationDbContext : IdentityDbContext
         builder.Entity<PostEntity>()
             .HasIndex(p => p.Slug)
             .IsUnique();
+
+        // Унікальний індекс: один користувач може лайкнути конкретний пост лише раз
+        builder.Entity<PostLikeEntity>()
+            .HasIndex(l => new { l.PostId, l.UserId })
+            .IsUnique();
     }
 }

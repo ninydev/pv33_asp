@@ -3,6 +3,7 @@ using System;
 using LiveBlog.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LiveBlog.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251208185505_AddLikeCountColumn")]
+    partial class AddLikeCountColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.21");
@@ -130,9 +133,6 @@ namespace LiveBlog.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("LikesCount")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -145,6 +145,9 @@ namespace LiveBlog.Data.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("likesCount")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

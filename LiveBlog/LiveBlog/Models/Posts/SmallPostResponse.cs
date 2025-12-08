@@ -30,4 +30,6 @@ public class SmallPostResponse
     /// Імена медіа-файлів, прикріплених до допису.
     /// </summary>
     public IList<string> FileNames { get; set; } = new List<string>();
+
+    public int LikesCount = 0;
 }

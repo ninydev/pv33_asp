@@ -59,6 +59,7 @@
                 <a href="@hrefSlug">Slug</a>
             </th>
             <th>Content</th>
+            <th>Likes</th>
             <th class="text-end">Дії</th>
         </tr>
         </thead>
@@ -74,6 +75,7 @@
                         @(item.Content.Length > 80 ? item.Content.Substring(0, 80) + "…" : item.Content)
                     }
                 </td>
+                <td>@item.LikesCount</td>
                 <td class="text-end">
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Деталі</a>
                 </td>

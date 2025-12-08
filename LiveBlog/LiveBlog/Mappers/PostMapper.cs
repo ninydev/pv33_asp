@@ -99,6 +99,7 @@ public static class PostMapper
             UserId = entity.UserId,
             Slug = entity.Slug,
             Content = entity.Content,
+            LikesCount = entity.LikesCount
         };
 
         if (entity.MediaFiles is { Count: > 0 })

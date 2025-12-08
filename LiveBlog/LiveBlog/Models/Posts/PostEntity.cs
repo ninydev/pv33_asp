@@ -29,4 +29,6 @@ public class PostEntity : BaseEntity
     /// Колекція медіа-файлів, прикріплених до допису.
     /// </summary>
     public ICollection<PostMediaFileEntity> MediaFiles { get; set; } = new HashSet<PostMediaFileEntity>();
+    
+    public int LikesCount { get; set; }
 }

@@ -6,8 +6,10 @@ using LiveBlog.Models.IdentityUser;
 using LiveBlog.Services.Storage;
 using LiveBlog.Repositories.Base;
 using LiveBlog.Repositories.Posts;
+using LiveBlog.Repositories.Likes;
 using LiveBlog.Services;
 using LiveBlog.Services.Posts;
+using LiveBlog.Services.Likes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IPostLikeRepository, PostLikeRepository>();
+builder.Services.AddScoped<ILikeService, LikeService>();
 builder.Services.AddSingleton<AuthService>();
 
 var app = builder.Build();
