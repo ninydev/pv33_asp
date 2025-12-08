@@ -95,6 +95,7 @@ public class UserPostController : Controller
 
         try
         {
+            request.UserId = _authService.GetCurrentUserIdOrThrow();
             var created = await _postService.CreateAsync(request, ct);
             return RedirectToAction(nameof(Details), new { id = created.Id });
         }

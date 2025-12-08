@@ -181,25 +181,10 @@ public class PostService : IPostService
         PagedSortedFilteredRequest<PostSort, PostFilter> request,
         CancellationToken cancellationToken = default)
     {
-        var safeRequest = new PagedSortedFilteredRequest<PostSort, PostFilter>
-        {
-            Page = request.Page,
-            PageSize = request.PageSize,
-            SortBy = request.SortBy,
-            SortDirection = request.SortDirection,
-            Filter = new PostFilter
-            {
-                Query = request.Filter?.Query,
-                SlugContains = request.Filter?.SlugContains,
-                ContentContains = request.Filter?.ContentContains,
-                DateFrom = request.Filter?.DateFrom,
-                DateTo = request.Filter?.DateTo
-            }
-        };
 
         // За замовчуванням підтягуємо медіафайли
         var includes = new[] { nameof(PostEntity.MediaFiles) };
-        var result = await _repo.ListAsync(safeRequest, includes, cancellationToken);
+        var result = await _repo.ListAsync(request, includes, cancellationToken);
         return new PagedResult<SmallPostResponse>
         {
             Items = result.Items.Select(PostMapper.ToSmallResponse).ToList(),

@@ -7,6 +7,11 @@ namespace LiveBlog.Models.Posts;
 public class SmallPostResponse
 {
     /// <summary>
+    /// Ідентифікатор автора допису (UserId).
+    /// </summary>
+    public string UserId { get; set; }
+
+    /// <summary>
     /// Ідентифікатор допису.
     /// </summary>
     public int Id { get; set; }

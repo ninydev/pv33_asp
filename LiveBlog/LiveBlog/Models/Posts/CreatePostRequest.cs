@@ -11,6 +11,11 @@ namespace LiveBlog.Models.Posts;
 public class CreatePostRequest
 {
     /// <summary>
+    /// Ідентифікатор користувача (автора). Встановлюється контролером перед викликом сервісу.
+    /// </summary>
+    public string? UserId { get; set; }
+
+    /// <summary>
     /// Людиночитний унікальний ідентифікатор (slug) для URL.
     /// </summary>
     [Required]

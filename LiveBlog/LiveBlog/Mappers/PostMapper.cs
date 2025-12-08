@@ -17,6 +17,7 @@ public static class PostMapper
     {
         var entity = new PostEntity
         {
+            UserId = request.UserId?.Trim() ?? string.Empty,
             Slug = request.Slug?.Trim() ?? string.Empty,
             Content = request.Content?.Trim() ?? string.Empty,
         };
@@ -31,7 +32,8 @@ public static class PostMapper
 
                 entity.MediaFiles.Add(new PostMediaFileEntity
                 {
-                    FileName = name
+                    FileName = name,
+                    UserId = entity.UserId
                 });
             }
         }
@@ -94,6 +96,7 @@ public static class PostMapper
         var response = new SmallPostResponse
         {
             Id = entity.Id,
+            UserId = entity.UserId,
             Slug = entity.Slug,
             Content = entity.Content,
         };
