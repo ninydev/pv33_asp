@@ -7,6 +7,7 @@ public class LikePostNotification
     public string? UserName { get; set; }
     
     public int PostId { get; set; }
+    public string AuthorId { get; set; }
     public int LikesCount { get; set; }
     
     public bool IsLiked { get; set; }

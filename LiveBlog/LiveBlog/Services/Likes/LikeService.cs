@@ -36,6 +36,7 @@ public class LikeService : ILikeService
 
         notification.PostId = postId;
         notification.UserId = userId;
+        notification.AuthorId = post.UserId;
         
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
@@ -53,7 +54,6 @@ public class LikeService : ILikeService
             
             notification.IsLiked = true;
             notification.LikesCount = post.LikesCount;
-            return notification;
         }
         else
         {
@@ -66,8 +66,9 @@ public class LikeService : ILikeService
             
             notification.IsLiked = false;
             notification.LikesCount = post.LikesCount;
-            return notification;
         }
+        
+        return notification;
     }
 
     public async Task<bool> IsLikedByMeAsync(int postId, CancellationToken ct = default)
