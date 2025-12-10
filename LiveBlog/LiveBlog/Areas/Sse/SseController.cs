@@ -51,10 +51,21 @@ public class SseController : ControllerBase
             // Этот цикл будет висеть, пока клиент подключен
             await foreach (var message in client.Channel.Reader.ReadAllAsync(cancellationToken))
             {
-                // Формируем SSE формат (data: message\n\n)
-                // Если message уже отформатирован в сервисе, то просто пишем его
-                // Для простоты предположим, сервис шлет сырой текст:
-                await Response.WriteAsync($"data: {message}\n\n", cancellationToken);
+                // Если сообщение уже содержит корректный SSE‑фрейм (начинается с "event:" или "id:" или содержит строки "data:"),
+                // передаём его как есть. Иначе — оборачиваем в безымянное событие с префиксом data: ... \n\n
+                var trimmed = message?.TrimStart();
+                var looksLikeSseFrame = !string.IsNullOrEmpty(trimmed) &&
+                                        (trimmed.StartsWith("event:") || trimmed.StartsWith("id:") || trimmed.StartsWith("data:"));
+
+                if (looksLikeSseFrame)
+                {
+                    await Response.WriteAsync(message, cancellationToken);
+                }
+                else
+                {
+                    await Response.WriteAsync($"data: {message}\n\n", cancellationToken);
+                }
+
                 await Response.Body.FlushAsync(cancellationToken);
             }
         }

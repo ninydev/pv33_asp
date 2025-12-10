@@ -1,6 +1,5 @@
 namespace LiveBlog.Models.Likes;
 
-using System.Text.Json.Serialization;
 
 [Serializable]
 public class LikePostNotification

@@ -33,30 +33,31 @@
 
 // 1) Ініціюємо постійне з'єднання з SSE‑endpoint на бекенді.
 //const eventSource = new EventSource('/sse/notifications/subscribe'); // URL до контролера, що стрімить події
-const eventSource = new EventSource('/sse/connect'); // URL до контролера, що стрімить події
+window.eventSource = new EventSource('/sse/connect'); // URL до контролера, що стрімить події
 
 // Спрацьовує, коли канал успішно відкрився.
-eventSource.onopen = (event) => {
+window.eventSource.onopen = (event) => {
     console.log('Connected to server'); // Для відладки: підтвердження, що з'єднання встановлено
 }
 
 // Отримання кожного повідомлення від сервера.
 // event.data — це рядок; за потреби парсимо: const payload = JSON.parse(event.data);
-eventSource.onmessage = (event) => {
+window.eventSource.onmessage = (event) => {
     console.log("SSE Message", event.data); // Тут можна оновлювати UI, показувати нотифікації тощо
 };
 
 // Спрацьовує при помилці/розриві з'єднання.
 // Типові сценарії: тайм‑аут, рестарт серверу, втрата мережі.
 // Браузер спробує перепідключитися автоматично; можна додати власну логіку повтору або індикатор статусу.
-eventSource.onerror = (error) => {
+window.eventSource.onerror = (error) => {
     console.error(error); // Для відладки; у продакшені — показати дружнє повідомлення користувачу
 };
 
-/*
-// Приклад: закрити з'єднання, коли сторінка закривається/змінюється
-// window.addEventListener('beforeunload', () => eventSource.close());
 
+// Приклад: закрити з'єднання, коли сторінка закривається/змінюється
+window.addEventListener('beforeunload', () => eventSource.close());
+
+/*
 // Приклад обробки іменованої події з сервера:
 // eventSource.addEventListener('notification', (e) => {
 //   const data = JSON.parse(e.data);

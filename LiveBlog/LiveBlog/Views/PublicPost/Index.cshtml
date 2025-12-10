@@ -134,5 +134,19 @@
         document.querySelectorAll(".btnLike").forEach(el => {
             el.addEventListener("click", () => likePost(el.id.replace("post_", "")));
         })
+
+        window.eventSource.addEventListener('LikePostNotification', (e) => {
+            let data;
+            try {
+                data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+            } catch (err) {
+                console.error('Invalid SSE payload', err);
+                return;
+            }
+            console.log(typeof (data))
+            console.log(data)
+          console.log("By SSE Event Name: ", data['postId'] , " ", data['likesCount'])
+            document.getElementById("post_" + data.postId).innerText = data.likesCount + " Like / Dislike";
+        });
     </script>
 }
