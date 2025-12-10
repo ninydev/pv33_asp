@@ -75,7 +75,9 @@
                         @(item.Content.Length > 80 ? item.Content.Substring(0, 80) + "…" : item.Content)
                     }
                 </td>
-                <td>@item.LikesCount</td>
+                <td>
+                    <button class="btnLike" id="post_@item.Id"> @item.LikesCount Like / Dislike </button>
+                    </td>
                 <td class="text-end">
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Деталі</a>
                 </td>
@@ -103,3 +105,36 @@
     </ul>
     <div class="text-muted">Всього: @total • Сторінка @pageNumber з @totalPages</div>
 </nav>
+
+@section Scripts {
+    <script>
+        
+        // Add | Remove like from post
+        function likePost(postId) {
+            fetch("/api/posts/" + postId + "/likes/toggle", {
+                method: "POST"
+            }).then(response => {
+                console.log(response.status)
+                console.log(response)
+                return response.json();
+            })
+              .then(data => {
+                  console.log(data);
+                  document.getElementById("post_" + postId).innerText = data.count + " Like / Dislike";
+              });
+            
+            // $.ajax({
+            //     url: "/api/posts/" + postId + "/like/toggle",
+            //     type: "POST",
+            //     success: function (data) {
+            //         $("#post_" + postId).text(data.likesCount + " Like / Dislike");
+            //     }
+            // });
+        }
+        
+        // Add Event Listeners to all like buttons
+        document.querySelectorAll(".btnLike").forEach(el => {
+            el.addEventListener("click", () => likePost(el.id.replace("post_", "")));
+        })
+    </script>
+}
