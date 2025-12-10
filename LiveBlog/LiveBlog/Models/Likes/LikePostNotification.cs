@@ -1,7 +1,10 @@
 namespace LiveBlog.Models.Likes;
 
+using System.Text.Json.Serialization;
 
+[Serializable]
 public class LikePostNotification
+
 {
     public string UserId { get; set; }
     public string? UserName { get; set; }

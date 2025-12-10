@@ -43,7 +43,7 @@ eventSource.onopen = (event) => {
 // Отримання кожного повідомлення від сервера.
 // event.data — це рядок; за потреби парсимо: const payload = JSON.parse(event.data);
 eventSource.onmessage = (event) => {
-    console.log(event.data); // Тут можна оновлювати UI, показувати нотифікації тощо
+    console.log("SSE Message", event.data); // Тут можна оновлювати UI, показувати нотифікації тощо
 };
 
 // Спрацьовує при помилці/розриві з'єднання.

@@ -1,3 +1,4 @@
+using LiveBlog.Areas.Sse;
 using LiveBlog.Data;
 using LiveBlog.Models.Likes;
 using LiveBlog.Repositories.Likes;
@@ -15,13 +16,19 @@ public class LikeService : ILikeService
     private readonly IPostRepository _posts;
     private readonly AuthService _auth;
     private readonly ApplicationDbContext _db;
+    private readonly ILogger<LikeService> _logger;
+    private readonly SseService _sseService;
 
-    public LikeService(IPostLikeRepository likes, IPostRepository posts, AuthService auth, ApplicationDbContext db)
+    public LikeService(IPostLikeRepository likes, IPostRepository posts, AuthService auth, 
+        ILogger<LikeService> logger, SseService sseService,
+        ApplicationDbContext db)
     {
         _likes = likes;
         _posts = posts;
         _auth = auth;
         _db = db;
+        _logger = logger;
+        _sseService = sseService;
     }
 
     public async Task<LikePostNotification> ToggleAsync(int postId, CancellationToken ct = default)
@@ -67,7 +74,8 @@ public class LikeService : ILikeService
             notification.IsLiked = false;
             notification.LikesCount = post.LikesCount;
         }
-        
+
+        await _sseService.SendToAllAsync(notification);
         return notification;
     }
 
