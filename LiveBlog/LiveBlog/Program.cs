@@ -1,3 +1,4 @@
+using LiveBlog.Areas.Sse;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using LiveBlog.Data;
@@ -34,6 +35,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IPostLikeRepository, PostLikeRepository>();
 builder.Services.AddScoped<ILikeService, LikeService>();
 builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<SseService>();
 
 var app = builder.Build();
 
