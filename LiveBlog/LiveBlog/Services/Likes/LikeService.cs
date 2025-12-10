@@ -24,14 +24,19 @@ public class LikeService : ILikeService
         _db = db;
     }
 
-    public async Task<(bool liked, int likesCount)> ToggleAsync(int postId, CancellationToken ct = default)
+    public async Task<LikePostNotification> ToggleAsync(int postId, CancellationToken ct = default)
     {
+        var notification = new LikePostNotification();
+        
         var userId = _auth.GetCurrentUserIdOrThrow();
 
         var post = await _posts.GetByIdAsync(postId, ct);
         if (post is null)
             throw new KeyNotFoundException("Пост не знайдено");
 
+        notification.PostId = postId;
+        notification.UserId = userId;
+        
         await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
         var existing = await _likes.GetByUserAndPostAsync(userId, postId, ct);
@@ -45,7 +50,10 @@ public class LikeService : ILikeService
             await _posts.UpdateAsync(post, ct);
 
             await tx.CommitAsync(ct);
-            return (true, post.LikesCount);
+            
+            notification.IsLiked = true;
+            notification.LikesCount = post.LikesCount;
+            return notification;
         }
         else
         {
@@ -55,7 +63,10 @@ public class LikeService : ILikeService
             await _posts.UpdateAsync(post, ct);
 
             await tx.CommitAsync(ct);
-            return (false, post.LikesCount);
+            
+            notification.IsLiked = false;
+            notification.LikesCount = post.LikesCount;
+            return notification;
         }
     }
 

@@ -19,8 +19,8 @@ public class PostLikesController : ControllerBase
     [HttpPost("toggle")]
     public async Task<IActionResult> Toggle(int postId, CancellationToken ct)
     {
-        var (liked, count) = await _likes.ToggleAsync(postId, ct);
-        return Ok(new { liked, count });
+        var notification = await _likes.ToggleAsync(postId, ct);
+        return Ok(notification);
     }
 
     [HttpGet("status")]
