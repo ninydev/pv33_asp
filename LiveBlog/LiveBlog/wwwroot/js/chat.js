@@ -25,14 +25,17 @@ window.eventSource.addEventListener('ChatMessageNotification', (e) => {
     const data = JSON.parse(e.data);
     console.log(data);
     const div = document.createElement('div');
+
+    if (data.fromUserName === userName ) {div.className= 'alert alert-info mb-2 text-end'; data.fromUserName = 'Me';}
+    else div.className ='alert alert-secondary mb-2';
+    
     const t = new Date(Number(e.lastEventId)).toLocaleString();
     div.innerHTML = 
         "" +
         "<strong>" + data.fromUserName + "</strong>: " + data.message + 
         "<span class='text-muted small float-end'>" + t + "</span>";
     
-    if (data.fromUserName === userName ) div.className= 'alert alert-info mb-2 text-end';
-    else div.className ='alert alert-secondary mb-2';
+
     
     messageList.appendChild(div);
 })
