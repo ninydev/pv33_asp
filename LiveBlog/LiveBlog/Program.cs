@@ -9,6 +9,7 @@ using LiveBlog.Repositories.Base;
 using LiveBlog.Repositories.Posts;
 using LiveBlog.Repositories.Likes;
 using LiveBlog.Services;
+using LiveBlog.Services.Chat;
 using LiveBlog.Services.Posts;
 using LiveBlog.Services.Likes;
 
@@ -36,6 +37,7 @@ builder.Services.AddScoped<IPostLikeRepository, PostLikeRepository>();
 builder.Services.AddScoped<ILikeService, LikeService>();
 builder.Services.AddSingleton<AuthService>();
 builder.Services.AddSingleton<SseService>();
+builder.Services.AddSingleton<ChatService>();
 
 var app = builder.Build();
 
