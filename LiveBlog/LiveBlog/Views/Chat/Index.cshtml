@@ -1,0 +1,64 @@
+﻿@{
+    ViewData["Title"] = "Public Chat";
+}
+
+
+<section id="chatPage">
+    <!-- Заголовок чата (опционально, если нужно что-то кроме Site Header) -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <h2 class="border-bottom pb-2">Public Chat</h2>
+        </div>
+    </div>
+
+    <!-- Основная зона: Сообщения | Список юзеров -->
+    <div class="row g-3"> <!-- g-3 добавляет отступы между колонками -->
+        
+        <!-- Левая часть: Сообщения -->
+        <div class="col-md-9">
+            <div class="card chat-card">
+                <div class="card-header bg-primary text-white">
+                    Messages
+                </div>
+                <div class="card-body scrollable-content" id="messagesList">
+                    <!-- Пример сообщения (для визуализации) -->
+                    <div class="alert alert-secondary mb-2">
+                        <strong>User1:</strong> Всем привет!
+                        <span class="text-muted small float-end">10:00</span>
+                    </div>
+                    <div class="alert alert-info mb-2 text-end">
+                        <strong>Me:</strong> Привет! Как дела?
+                        <span class="text-muted small float-end">10:01</span>
+                    </div>
+                     <!-- Сюда JavaScript будет добавлять новые сообщения -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая часть: Список пользователей -->
+        <div class="col-md-3">
+            <div class="card chat-card">
+                <div class="card-header bg-secondary text-white">
+                    Online Users
+                </div>
+                <ul class="list-group list-group-flush scrollable-content" id="usersList">
+                    <!-- Пример пользователей -->
+                    <li class="list-group-item">Admin</li>
+                    <li class="list-group-item">User1</li>
+                    <li class="list-group-item">Guest_123</li>
+                    <!-- Сюда JavaScript будет добавлять юзеров -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Нижняя часть: Отправка сообщения -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="input-group">
+                <input type="text" id="messageInput" class="form-control" placeholder="Введите сообщение..." aria-label="Message">
+                <button class="btn btn-primary" type="button" id="sendButton">Send</button>
+            </div>
+        </div>
+    </div>
+</section>

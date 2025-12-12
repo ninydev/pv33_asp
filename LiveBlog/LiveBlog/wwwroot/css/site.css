@@ -20,3 +20,34 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Chat */
+
+/* Фиксированная высота для окна чата и списка юзеров */
+.chat-card {
+  height: 65vh; /* Занимает 65% высоты экрана */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Блок, который будет скроллиться */
+.scrollable-content {
+  flex: 1; /* Растягивается на все доступное место в карточке */
+  overflow-y: auto; /* Вертикальный скролл при переполнении */
+  padding: 10px;
+}
+
+/* Красивый скроллбар (опционально, для Webkit браузеров) */
+.scrollable-content::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollable-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
