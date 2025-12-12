@@ -31,9 +31,8 @@ public class ApiChatController : ControllerBase
         // User.Identity не хранит ID напрямую, он лежит в Claims
         string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         
-        
-        
-        _chatService.SendMessage(request);
+        ChatMessageNotification message = _chatService.BuildMessage(userId, userName, request);
+        _chatService.SendMessage(message);
         return Ok();
     }
     

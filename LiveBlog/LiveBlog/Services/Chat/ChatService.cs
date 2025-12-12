@@ -7,31 +7,31 @@ namespace LiveBlog.Services.Chat;
 public class ChatService
 {
     private readonly SseService _sseService;
-    private readonly AuthService _authService;
     private readonly ILogger<ChatService> _logger;
     
-    public ChatService(SseService sseService,
-        AuthService authService
+    public ChatService(SseService sseService
         , ILogger<ChatService> logger)
     {
-        _authService = authService;
         _sseService = sseService;
         _logger = logger;
     }
 
-    public void SendMessage(ChatMessageRequest request)
+    public ChatMessageNotification BuildMessage(string FromUserId, string FromUserName, ChatMessageRequest request)
     {
-        MyIdentityUserEntity user = _authService.GetCurrentUserOrThrowAsync().Result;
-        ChatMessageNotification notification = new ()
+        return new ChatMessageNotification()
         {
-            FromUserId = user.Id,
-            FromUserName = user.UserName,
+            FromUserId = FromUserId,
+            FromUserName = FromUserName,
             Message = request.Message
         };
+    }
+
+    public void SendMessage(ChatMessageNotification notification)
+    {
 
         _sseService.SendToAllAsync(notification);
         
-        _logger.LogInformation($"New message: {request.Message}");
+        _logger.LogInformation($"New message: {notification.Message}");
     }
     
     public void LeveChat()

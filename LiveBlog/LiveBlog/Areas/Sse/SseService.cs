@@ -8,6 +8,13 @@ using System.Text.Json;
 
 public class SseService
 {
+    
+    private readonly ILogger<SseService> _logger;
+    public SseService(ILogger<SseService> logger)
+    {
+        _logger = logger;
+    }
+    
     // Потокобезопасный словарь для хранения всех активных соединений
     // Ключ: ConnectionId, Значение: SseClient
     private readonly ConcurrentDictionary<string, SseClient> _clients = new();
@@ -36,6 +43,7 @@ public class SseService
     // 3. Отправка ВСЕМ (Broadcast)
     public async Task SendToAllAsync(string message)
     {
+        _logger.LogInformation($"Send to all: {message}");
         foreach (var client in _clients.Values)
         {
             await client.Channel.Writer.WriteAsync(message);
