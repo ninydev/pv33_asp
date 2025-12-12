@@ -34,8 +34,6 @@ window.eventSource.addEventListener('ChatMessageNotification', (e) => {
         "" +
         "<strong>" + data.fromUserName + "</strong>: " + data.message + 
         "<span class='text-muted small float-end'>" + t + "</span>";
-    
 
-    
     messageList.appendChild(div);
 })
