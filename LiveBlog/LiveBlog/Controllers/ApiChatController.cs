@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using LiveBlog.Models.Chat;
 using LiveBlog.Services.Chat;
 using Microsoft.AspNetCore.Authorization;
@@ -23,6 +24,15 @@ public class ApiChatController : ControllerBase
     [Route("send")]
     public IActionResult SendMessage(ChatMessageRequest request)
     {
+        // 1. Получаем Имя (обычно логин или email)
+        string userName = User.Identity.Name;
+
+        // 2. Получаем ID (это GUID или int, который лежит в базе)
+        // User.Identity не хранит ID напрямую, он лежит в Claims
+        string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        
+        
         _chatService.SendMessage(request);
         return Ok();
     }
